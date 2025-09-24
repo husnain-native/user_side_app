@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "197051212886",
+    "project_id": "park-view-city-19b3e",
+    "storage_bucket": "park-view-city-19b3e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:197051212886:android:f37e5da74756b7450587f7",
+        "android_client_info": {
+          "package_name": "com.example.parkchatapp2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "197051212886-eel0qf0mk5ni9pdio04qnth49qvp47fo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.parkchatapp2",
+            "certificate_hash": "e10c81cc1e809f7a4d178405f94641e07b7f4845"
+          }
+        },
+        {
+          "client_id": "197051212886-uga3bccr82ofdva5foauu50a7la12ev1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD04dvZUdrD6jjT11g6fF7G1UI1_8EoTyE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "197051212886-uga3bccr82ofdva5foauu50a7la12ev1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
