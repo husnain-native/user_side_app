@@ -33,7 +33,7 @@ class HomeTwoRowAppBar extends StatelessWidget implements PreferredSizeWidget {
       child: SafeArea(
         bottom: false,
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
           decoration: BoxDecoration(
             color: const Color.fromARGB(255, 250, 249, 248),
             boxShadow: [
@@ -48,7 +48,7 @@ class HomeTwoRowAppBar extends StatelessWidget implements PreferredSizeWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               _buildTopRow(context),
-              SizedBox(height: 10.h),
+              SizedBox(height: 5.h),
               _buildSearchRow(context),
             ],
           ),
@@ -85,16 +85,16 @@ class HomeTwoRowAppBar extends StatelessWidget implements PreferredSizeWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const Icon(
+                  Icon(
                     Icons.keyboard_arrow_down_rounded,
-                    size: 18,
-                    color: Color(0xFF6B7280),
+                    size: 18.r,
+                    color: const Color(0xFF6B7280),
                   ),
                 ],
               ),
               // SizedBox(height: 5.w),
               Padding(
-                padding: const EdgeInsets.only(left: 14),
+                padding: EdgeInsets.only(left: 14.w),
                 child: Text(
                   location,
                   style: AppTextStyles.bodySmall.copyWith(
@@ -105,7 +105,7 @@ class HomeTwoRowAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
               // SizedBox(width: 17,),
               Padding(
-                padding: EdgeInsets.only(left: 11.0),
+                padding: EdgeInsets.only(left: 11.w),
                 child: LanguageToggleButton(),
               ),
             ],
@@ -133,13 +133,21 @@ class HomeTwoRowAppBar extends StatelessWidget implements PreferredSizeWidget {
           child: GestureDetector(
             onTap: onMenuTap,
             child: Container(
+              
               width: 40.h,
-              height: 40.h,
+              height: 31.h,
               alignment: Alignment.center,
               decoration: BoxDecoration(
+                // elevation: 2,
                 color: AppColors.white,
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: const Color(0xFFE6E6E6)),
+                borderRadius: BorderRadius.circular(4.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 1,
+                  )
+                ]
+                // border: Border.all(color: const Color(0xFFE6E6E6)),
               ),
               child: const Icon(Icons.menu_sharp, color: Color(0xFF2A2A2A)),
             ),
@@ -147,7 +155,7 @@ class HomeTwoRowAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
         Expanded(
           child: Container(
-            height: 40.h,
+            height: 31.h,
             decoration: BoxDecoration(
               color: AppColors.fillColor,
               borderRadius: BorderRadius.circular(8.r),
@@ -156,13 +164,13 @@ class HomeTwoRowAppBar extends StatelessWidget implements PreferredSizeWidget {
             padding: EdgeInsets.symmetric(horizontal: 12.w),
             child: Row(
               children: [
-                const Icon(Icons.search, color: AppColors.iconColor),
+                 Icon(Icons.search, color: AppColors.iconColor, size: 18.sp,),
                 SizedBox(width: 8.w),
                 Expanded(
                   child: TextField(
                     decoration: InputDecoration(
                       isDense: true,
-                      hintText: 'Search in',
+                      hintText: 'Search',
                       hintStyle: AppTextStyles.bodyMedium.copyWith(
                         color: const Color(0xFF9CA3AF),
                         fontWeight: FontWeight.w500,
@@ -171,10 +179,11 @@ class HomeTwoRowAppBar extends StatelessWidget implements PreferredSizeWidget {
                     ),
                   ),
                 ),
-                const Icon(
+                 Icon(
                   Icons.mic_none_rounded,
                   color: AppColors.iconColor,
                   weight: 1,
+                  size: 18.sp,
                 ),
               ],
             ),
@@ -185,10 +194,10 @@ class HomeTwoRowAppBar extends StatelessWidget implements PreferredSizeWidget {
           onTap: onFilterTap,
           child: Container(
             width: 40.h,
-            height: 40.h,
+            height: 31.h,
             decoration: BoxDecoration(
               color: AppColors.white,
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(4.r),
               border: Border.all(color: const Color(0xFFE5E7EB)),
             ),
             child: const Icon(Icons.tune, color: Color(0xFF2A2A2A)),

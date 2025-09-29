@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:park_chatapp/constants/app_colors.dart';
 import '../../constants/app_text_styles.dart';
 
@@ -19,7 +20,7 @@ class CustomTextField extends StatelessWidget {
     this.controller,
     this.validator,
     this.suffixIcon,
-    this.prefixIcon
+    this.prefixIcon,
   });
 
   @override
@@ -33,28 +34,24 @@ class CustomTextField extends StatelessWidget {
         labelText: label,
         labelStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
           borderSide: const BorderSide(color: AppColors.grey, width: 0.1),
-          
         ),
         filled: true,
         fillColor: AppColors.fillColor,
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
           borderSide: const BorderSide(color: AppColors.grey, width: 0.1),
-          
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
           borderSide: const BorderSide(color: AppColors.primaryRed, width: 0.1),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
         suffixIcon: suffixIcon,
         prefixIcon: prefixIcon,
         prefixIconColor: AppColors.primaryRed.withOpacity(0.6),
         suffixIconColor: AppColors.primaryRed.withOpacity(0.6),
-        
-       
       ),
     );
   }

@@ -126,7 +126,7 @@ class HomeScreen extends StatelessWidget {
             ),
             SizedBox(height: 12.h),
             SizedBox(
-              height: 220,
+              height: 220.h,
               child: FlutterMap(
                 options: const MapOptions(
                   initialCenter: ll.LatLng(33.7178631, 73.2152564),
@@ -138,16 +138,16 @@ class HomeScreen extends StatelessWidget {
                         'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'com.example.parkchatapp2',
                   ),
-                  const MarkerLayer(
+                  MarkerLayer(
                     markers: [
                       Marker(
-                        point: ll.LatLng(33.7178631, 73.2152564),
-                        width: 40,
-                        height: 40,
+                        point: const ll.LatLng(33.7178631, 73.2152564),
+                        width: 40.w,
+                        height: 40.h,
                         child: Icon(
                           Icons.location_on,
                           color: Colors.red,
-                          size: 36,
+                          size: 36.r,
                         ),
                       ),
                     ],
@@ -162,7 +162,7 @@ class HomeScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _navigateToAdminChat(context),
         backgroundColor: AppColors.primaryRed,
-        child: const Icon(Icons.chat, color: Colors.white, size: 28),
+        child: Icon(Icons.chat, color: Colors.white, size: 28.r),
       ),
     );
   }

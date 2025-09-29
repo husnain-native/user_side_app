@@ -133,7 +133,7 @@ class _CreateMarketItemScreenState extends State<CreateMarketItemScreen> {
           Text('Category', style: AppTextStyles.bodyMediumBold),
           SizedBox(height: 8.h),
           Wrap(
-            spacing: 8.w,
+            spacing: 6.w,
             children:
                 topCats
                     .map(

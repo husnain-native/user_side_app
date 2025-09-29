@@ -41,35 +41,35 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // SizedBox(height: MediaQuery.of(context).size.height * 0.3),
-            // Replace with your app logo
-            Center(
-              child: Image.asset(
-                'assets/images/logo1.jpg',
-                fit: BoxFit.contain,
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+          // Replace with your app logo
+          Center(
+            child: Image.asset(
+              'assets/images/logo1.jpg',
+              width: 200.w,
+              height: 200.h,
+              fit: BoxFit.contain,
+            ),
+          ),
+    // SizedBox(height: 130.h),
+          Padding(
+            padding:  EdgeInsets.only(top: 130.h),
+            child: Text(
+              'Copyright 2025@ ParkViewCity',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.grey,
+                fontSize: 12.sp,
               ),
             ),
-// SizedBox(height: 130.h),
-            Padding(
-              padding:  EdgeInsets.only(top: 130.h),
-              child: Text(
-                'Copyright 2025@ ParkViewCity',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey,
-                  fontSize: 12.sp,
-                ),
-              ),
-            ),
-            // const Spacer(),
-          ],
-        ),
+          ),
+          // const Spacer(),
+        ],
       ),
     );
   }

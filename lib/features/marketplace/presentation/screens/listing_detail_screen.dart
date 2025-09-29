@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:park_chatapp/constants/app_colors.dart';
 import 'package:park_chatapp/constants/app_text_styles.dart';
 import 'package:park_chatapp/features/chat/presentation/screens/direct_chat_screen.dart';
@@ -25,23 +26,23 @@ class ListingDetailScreen extends StatelessWidget {
           children: [
             _imageGallery(listing.imageUrls),
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(listing.title, style: AppTextStyles.headlineLarge),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6.h),
                   Text(
                     listing.formattedPrice,
                     style: AppTextStyles.bodyLarge.copyWith(
                       color: AppColors.primaryRed,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10.h),
                   Row(
                     children: [
                       _pill(listing.category.label),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8.w),
                       _pill(listing.condition.label),
                       const Spacer(),
                       Text(
@@ -52,23 +53,31 @@ class ListingDetailScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   Text('Description', style: AppTextStyles.bodyMediumBold),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6.h),
                   Text(listing.description, style: AppTextStyles.bodyMedium),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   Row(
                     children: [
-                      const Icon(Icons.place, size: 18, color: AppColors.primaryRed,),
-                      const SizedBox(width: 6),
+                      Icon(
+                        Icons.place,
+                        size: 18.r,
+                        color: AppColors.primaryRed,
+                      ),
+                      SizedBox(width: 6.w),
                       Expanded(child: Text(listing.location)),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   Row(
                     children: [
-                      const Icon(Icons.person_outline, size: 18, color: AppColors.primaryRed, ),
-                      const SizedBox(width: 6),
+                      Icon(
+                        Icons.person_outline,
+                        size: 18.r,
+                        color: AppColors.primaryRed,
+                      ),
+                      SizedBox(width: 6.w),
                       Expanded(
                         child: Text(
                           listing.sellerName,
@@ -77,21 +86,22 @@ class ListingDetailScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.chat_bubble_outline,
                         color: Colors.white,
+                        size: 18.r,
                       ),
                       label: const Text('Chat with Seller'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryRed,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                         ),
                       ),
                       onPressed: () {
@@ -121,13 +131,13 @@ class ListingDetailScreen extends StatelessWidget {
     if (urls.isEmpty) {
       return Container(
         color: Colors.grey.shade200,
-        height: 220,
+        height: 220.h,
         alignment: Alignment.center,
-        child: const Icon(Icons.image, size: 48, color: Colors.grey),
+        child: Icon(Icons.image, size: 48.r, color: Colors.grey),
       );
     }
     return SizedBox(
-      height: 260,
+      height: 260.h,
       child: PageView.builder(
         itemCount: urls.length,
         controller: PageController(viewportFraction: 1),
@@ -160,10 +170,10 @@ class ListingDetailScreen extends StatelessWidget {
 
   Widget _pill(String text) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
       decoration: BoxDecoration(
         color: AppColors.primaryRed.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
       ),
       child: Text(text, style: AppTextStyles.bodySmall),
     );

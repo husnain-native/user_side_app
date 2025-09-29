@@ -19,18 +19,18 @@ class SmallActionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+      // elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(bottomLeft: Radius.circular(4.r), bottomRight: Radius.circular(4.r))),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(4.r),
         child: Container(
-          padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 12.w),
+          padding: EdgeInsets.symmetric(vertical: 5.h, horizontal: 4.w),
           decoration: BoxDecoration(
             color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12.r),
+            borderRadius: BorderRadius.circular(4.r),
           ),
-          child: Column(
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(icon, size: 28.w, color: color),

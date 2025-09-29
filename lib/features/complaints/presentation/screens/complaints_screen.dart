@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:park_chatapp/constants/app_colors.dart';
 import 'package:park_chatapp/constants/app_text_styles.dart';
-import 'package:park_chatapp/features/complaints/presentation/screens/feedback_screen.dart';
+// feedback_screen removed
 import 'package:park_chatapp/features/complaints/presentation/screens/register_complaint_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:park_chatapp/core/widgets/sign_in_prompt.dart';
 import 'dart:async';
+import 'complaint_detail_screen.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class ComplaintsScreen extends StatefulWidget {
   const ComplaintsScreen({super.key});
@@ -14,81 +18,74 @@ class ComplaintsScreen extends StatefulWidget {
   State<ComplaintsScreen> createState() => _ComplaintsScreenState();
 }
 
-class _ComplaintsScreenState extends State<ComplaintsScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _ComplaintsScreenState extends State<ComplaintsScreen> {
   final List<_Complaint> _complaints = [];
-  final List<_Feedback> _feedbacks = [];
   final Map<String, bool> _complaintIds = {};
-  final Map<String, bool> _feedbackIds = {};
   bool _isLoadingComplaints = true;
-  bool _isLoadingFeedback = true;
   String? _complaintsError;
-  String? _feedbackError;
   StreamSubscription<DatabaseEvent>? _complaintsSubscription;
-  StreamSubscription<DatabaseEvent>? _feedbackSubscription;
   Timer? _debounceTimer;
+
+  // UI filter/search state
+  final TextEditingController _searchCtrl = TextEditingController();
+  String _searchText = '';
+  final Set<String> _filterStatuses = <String>{};
+  final Set<String> _filterCategories = <String>{};
+  final Set<String> _filterPriorities = <String>{};
+  String _sortBy = 'Newest';
+  bool _onlyMine = false;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     _loadComplaints();
-    _loadFeedback();
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
     _complaintsSubscription?.cancel();
-    _feedbackSubscription?.cancel();
     _debounceTimer?.cancel();
+    _searchCtrl.dispose();
     super.dispose();
   }
 
   void _loadComplaints() {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      setState(() {
-        _isLoadingComplaints = false;
-        _complaintsError = 'Please sign in to view complaints';
-      });
-      print('No user signed in for complaints');
-      return;
-    }
-
+    // Publicly load complaints for all users so guests can view
     FirebaseDatabase.instance
-        .ref('complaints/${user.uid}')
+        .ref('complaints')
         .get()
         .then((snapshot) {
-      if (!mounted) return;
-      _processComplaintSnapshot(snapshot);
-    }).catchError((e) {
-      if (!mounted) return;
-      setState(() {
-        _isLoadingComplaints = false;
-        _complaintsError = 'Failed to load complaints: $e';
-      });
-      print('Initial complaints fetch error: $e');
-    });
-
+          if (!mounted) return;
+          _processComplaintSnapshot(snapshot);
+        })
+        .catchError((e) {
+          if (!mounted) return;
+          setState(() {
+            _isLoadingComplaints = false;
+            _complaintsError = 'Failed to load complaints: $e';
+          });
+          print('Initial complaints fetch error: $e');
+        });
     _complaintsSubscription = FirebaseDatabase.instance
-        .ref('complaints/${user.uid}')
+        .ref('complaints')
         .onValue
-        .listen((event) {
-      if (!mounted) return;
-      _debounceTimer?.cancel();
-      _debounceTimer = Timer(const Duration(milliseconds: 100), () {
-        _processComplaintSnapshot(event.snapshot);
-      });
-    }, onError: (e) {
-      if (!mounted) return;
-      setState(() {
-        _isLoadingComplaints = false;
-        _complaintsError = 'Stream error: $e';
-      });
-      print('Complaints stream error: $e');
-    });
+        .listen(
+          (event) {
+            if (!mounted) return;
+            _debounceTimer?.cancel();
+            _debounceTimer = Timer(const Duration(milliseconds: 100), () {
+              _processComplaintSnapshot(event.snapshot);
+            });
+          },
+          onError: (e) {
+            if (!mounted) return;
+            setState(() {
+              _isLoadingComplaints = false;
+              _complaintsError = 'Stream error: $e';
+            });
+            print('Complaints stream error: $e');
+          },
+        );
 
     Timer(const Duration(seconds: 10), () {
       if (!mounted || !_isLoadingComplaints) return;
@@ -107,28 +104,36 @@ class _ComplaintsScreenState extends State<ComplaintsScreen>
       final List<_Complaint> complaints = [];
       _complaintIds.clear();
       if (snapshotValue != null && snapshotValue is Map) {
-        final Map<dynamic, dynamic> map = snapshotValue;
-        map.forEach((key, value) {
-          final id = key.toString();
-          if (_complaintIds.containsKey(id)) {
-            print('Skipped duplicate complaint: $id');
-            return;
-          }
-          try {
-            final data = Map<String, dynamic>.from(value as Map);
-            complaints.add(_Complaint(
-              id: id,
-              title: data['title']?.toString() ?? '',
-              category: data['category']?.toString() ?? '',
-              description: data['description']?.toString() ?? '',
-              status: _parseStatus(data['status']?.toString() ?? 'Pending'),
-              timestamp: _parseTimestamp(data['timestamp']?.toString()),
-              priority: data['priority']?.toString() ?? 'Medium',
-            ));
-            _complaintIds[id] = true;
-            print('Added complaint: $id');
-          } catch (e) {
-            print('Error parsing complaint $id: $e');
+        final Map<dynamic, dynamic> usersMap = snapshotValue;
+        usersMap.forEach((userId, userComplaints) {
+          if (userComplaints is Map) {
+            userComplaints.forEach((key, value) {
+              final id = key.toString();
+              if (_complaintIds.containsKey(id)) {
+                print('Skipped duplicate complaint: $id');
+                return;
+              }
+              try {
+                final data = Map<String, dynamic>.from(value as Map);
+                complaints.add(
+                  _Complaint(
+                    id: id,
+                    userId: userId.toString(),
+                    title: data['title']?.toString() ?? '',
+                    category: data['category']?.toString() ?? '',
+                    description: data['description']?.toString() ?? '',
+                    status: _parseStatus(
+                      data['status']?.toString() ?? 'Pending',
+                    ),
+                    timestamp: _parseTimestamp(data['timestamp']?.toString()),
+                    priority: data['priority']?.toString() ?? 'Medium',
+                  ),
+                );
+                _complaintIds[id] = true;
+              } catch (e) {
+                print('Error parsing complaint $id: $e');
+              }
+            });
           }
         });
       } else {
@@ -152,113 +157,9 @@ class _ComplaintsScreenState extends State<ComplaintsScreen>
     }
   }
 
-  void _loadFeedback() {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      setState(() {
-        _isLoadingFeedback = false;
-        _feedbackError = 'Please sign in to view feedback';
-      });
-      print('No user signed in for feedback');
-      return;
-    }
+  // Removed feedback loading; feedback feature deprecated
 
-    FirebaseDatabase.instance
-        .ref('feedback/${user.uid}')
-        .get()
-        .then((snapshot) {
-      if (!mounted) return;
-      _processFeedbackSnapshot(snapshot);
-    }).catchError((e) {
-      if (!mounted) return;
-      setState(() {
-        _isLoadingFeedback = false;
-        _feedbackError = 'Failed to load feedback: $e';
-      });
-      print('Initial feedback fetch error: $e');
-    });
-
-    _feedbackSubscription = FirebaseDatabase.instance
-        .ref('feedback/${user.uid}')
-        .onValue
-        .listen((event) {
-      if (!mounted) return;
-      _debounceTimer?.cancel();
-      _debounceTimer = Timer(const Duration(milliseconds: 100), () {
-        _processFeedbackSnapshot(event.snapshot);
-      });
-    }, onError: (e) {
-      if (!mounted) return;
-      setState(() {
-        _isLoadingFeedback = false;
-        _feedbackError = 'Stream error: $e';
-      });
-      print('Feedback stream error: $e');
-    });
-
-    Timer(const Duration(seconds: 10), () {
-      if (!mounted || !_isLoadingFeedback) return;
-      setState(() {
-        _isLoadingFeedback = false;
-        _feedbackError = 'Loading feedback timed out';
-      });
-      print('Feedback loading timed out');
-    });
-  }
-
-  void _processFeedbackSnapshot(DataSnapshot snapshot) {
-    try {
-      print('Processing feedback snapshot');
-      final snapshotValue = snapshot.value;
-      final List<_Feedback> feedbacks = [];
-      _feedbackIds.clear();
-      if (snapshotValue != null && snapshotValue is Map) {
-        final Map<dynamic, dynamic> map = snapshotValue;
-        map.forEach((key, value) {
-          final id = key.toString();
-          if (_feedbackIds.containsKey(id)) {
-            print('Skipped duplicate feedback: $id');
-            return;
-          }
-          try {
-            final data = Map<String, dynamic>.from(value as Map);
-            feedbacks.add(_Feedback(
-              id: id,
-              overallRating: (data['overallRating'] as num?)?.toDouble() ?? 3.0,
-              maintenanceRating: (data['maintenanceRating'] as num?)?.toDouble() ?? 3.0,
-              securityRating: (data['securityRating'] as num?)?.toDouble() ?? 3.0,
-              cleanlinessRating: (data['cleanlinessRating'] as num?)?.toDouble() ?? 3.0,
-              comments: data['comments']?.toString() ?? '',
-              reply: data['reply']?.toString(),
-              replyTimestamp: _parseTimestamp(data['replyTimestamp']?.toString()),
-              timestamp: _parseTimestamp(data['timestamp']?.toString()),
-            ));
-            _feedbackIds[id] = true;
-            print('Added feedback: $id');
-          } catch (e) {
-            print('Error parsing feedback $id: $e');
-          }
-        });
-      } else {
-        print('No feedback data or empty');
-      }
-      feedbacks.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-      setState(() {
-        _feedbacks
-          ..clear()
-          ..addAll(feedbacks);
-        _isLoadingFeedback = false;
-        _feedbackError = null;
-        print('Updated feedback list: ${_feedbacks.length} items');
-      });
-    } catch (e) {
-      setState(() {
-        _isLoadingFeedback = false;
-        _feedbackError = 'Failed to process feedback: $e';
-      });
-      print('Feedback processing error: $e');
-    }
-  }
+  // Removed feedback processing; feedback feature deprecated
 
   DateTime _parseTimestamp(String? timestamp) {
     try {
@@ -275,6 +176,8 @@ class _ComplaintsScreenState extends State<ComplaintsScreen>
         return ComplaintStatus.pending;
       case 'inprogress':
         return ComplaintStatus.inProgress;
+      case 'processing':
+        return ComplaintStatus.inProgress;
       case 'resolved':
         return ComplaintStatus.resolved;
       case 'closed':
@@ -287,70 +190,169 @@ class _ComplaintsScreenState extends State<ComplaintsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryRed,
-        title: Text(
-          'Complaints & Feedback',
-          style: AppTextStyles.bodyLarge.copyWith(color: Colors.white),
-        ),
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.white,
-          indicatorWeight: 3,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white.withOpacity(0.7),
-          labelStyle: AppTextStyles.bodyMediumBold.copyWith(fontSize: 16),
-          unselectedLabelStyle: AppTextStyles.bodyMedium.copyWith(fontSize: 16),
-          tabs: const [Tab(text: 'Complaints'), Tab(text: 'Feedback')],
+      backgroundColor: AppColors.white,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(109.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Top row - white background, centered title
+            Container(
+              color: Colors.white,
+              child: AppBar(
+                automaticallyImplyLeading: false,
+                leading: IconButton(
+                  icon: Icon(
+                    Icons.arrow_back,
+                    color: AppColors.iconColor,
+                    size: 20.sp,
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                backgroundColor: Colors.white,
+                elevation: 0,
+                centerTitle: true,
+                title: Text(
+                  'Complaints',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.iconColor,
+                  ),
+                ),
+                toolbarHeight: 36.h,
+                iconTheme: const IconThemeData(color: Colors.black),
+              ),
+            ),
+            // Second row - match HomeTwoRowAppBar search row exactly
+            Container(
+              color: Colors.white,
+              padding: EdgeInsets.fromLTRB(12.w, 4.h, 12.w, 0.h),
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: GestureDetector(
+                      onTap: () {},
+                      child: Container(
+                        width: 40.w,
+                        height: 31.h,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.circular(4.r),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 1,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.menu_sharp,
+                          color: Color(0xFF2A2A2A),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Container(
+                      height: 31.h,
+                      decoration: BoxDecoration(
+                        color: AppColors.fillColor,
+                        borderRadius: BorderRadius.circular(8.r),
+                        border: Border.all(color: const Color(0xFFE5E7EB)),
+                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 12.w),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.search,
+                            color: AppColors.iconColor,
+                            size: 18.sp,
+                          ),
+                          SizedBox(width: 8.w),
+                          Expanded(
+                            child: TextField(
+                              controller: _searchCtrl,
+                              decoration: InputDecoration(
+                                isDense: true,
+                                hintText: 'Search',
+                                hintStyle: AppTextStyles.bodyMedium.copyWith(
+                                  color: const Color(0xFF9CA3AF),
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 16.sp,
+                                ),
+                                border: InputBorder.none,
+                              ),
+                              onChanged:
+                                  (v) => setState(() => _searchText = v.trim()),
+                            ),
+                          ),
+                          Icon(
+                            Icons.mic_none_rounded,
+                            color: AppColors.iconColor,
+                            size: 18.sp,
+                            weight: 1,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  GestureDetector(
+                    onTap: _openFilterSheet,
+                    child: Container(
+                      width: 40.h,
+                      height: 31.h,
+                      decoration: BoxDecoration(
+                        color: AppColors.white,
+                        borderRadius: BorderRadius.circular(4.r),
+                        border: Border.all(color: const Color(0xFFE5E7EB)),
+                      ),
+                      child: const Icon(Icons.tune, color: Color(0xFF2A2A2A)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
-      body: SafeArea(
-        child: TabBarView(
-          controller: _tabController,
-          children: [_buildComplaintsTab(context), _buildFeedbackTab(context)],
-        ),
+      body: SafeArea(child: _buildComplaintsTab(context)),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          if (!await ensureSignedIn(context)) return;
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const RegisterComplaintScreen()),
+          );
+        },
+        backgroundColor: AppColors.primaryRed,
+        foregroundColor: Colors.white,
+        label: const Text('Register Complaint'),
+        icon: const Icon(Icons.report_problem),
       ),
     );
   }
 
   Widget _buildComplaintsTab(BuildContext context) {
+    final filtered = _applyComplaintFilters(_complaints);
+    if (_isLoadingComplaints) {
+      return Center(
+        child: SpinKitWave(color: AppColors.primaryRed, size: 42.w),
+      );
+    }
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       children: [
-        _buildQuickActions(context),
-        const SizedBox(height: 16),
-        if (_isLoadingComplaints)
-          Container(
-            width: double.infinity,
-            color: const Color.fromARGB(255, 221, 211, 200),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              children: [
-                const SizedBox(width: 4),
-                const SizedBox(
-                  width: 14,
-                  height: 14,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Loading complaints...',
-                    style: AppTextStyles.bodySmall,
-                  ),
-                ),
-              ],
-            ),
-          ),
         if (_complaintsError != null)
           Container(
             width: double.infinity,
             color: Colors.red.shade100,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
             child: Row(
               children: [
                 const Icon(Icons.error_outline, size: 16, color: Colors.red),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
                     _complaintsError!,
@@ -362,205 +364,292 @@ class _ComplaintsScreenState extends State<ComplaintsScreen>
               ],
             ),
           ),
-        _buildComplaintsList(),
+        _buildComplaintsList(filtered),
       ],
     );
   }
 
-  Widget _buildFeedbackTab(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
+  // Feedback tab removed
+
+  // Former long Register Complaint action card removed in favor of bottom-right FAB
+
+  // Removed old feedback action card in favor of floating action button
+
+  // Feedback list removed
+
+  Widget _buildComplaintsList(List<_Complaint> list) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildFeedbackActions(context),
-        const SizedBox(height: 16),
-        if (_isLoadingFeedback)
-          Container(
-            width: double.infinity,
-            color: Colors.yellow.shade100,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
+        Text('All Complaints', style: AppTextStyles.bodyMediumBold),
+        SizedBox(height: 12.h),
+        if (list.isEmpty && !_isLoadingComplaints)
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox(width: 4),
-                const SizedBox(
-                  width: 14,
-                  height: 14,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Loading feedback...',
-                    style: AppTextStyles.bodySmall,
+                SizedBox(height: 100.h),
+                SizedBox(
+                  height: 200.h,
+                  width: 250.w,
+                  child: Image.asset(
+                    'assets/images/not_found.jpg',
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(
+                        Icons.search_off,
+                        size: 64.sp,
+                        color: Colors.grey.shade400,
+                      );
+                    },
                   ),
                 ),
+                // SizedBox(height: 12.h),
+                Text(
+                  'No complaints found',
+                  style: AppTextStyles.bodyMediumBold,
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'Try adjusting your filters or register a complaint.',
+                  style: AppTextStyles.bodySmall.copyWith(color: Colors.grey),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 12.h),
               ],
             ),
-          ),
-        if (_feedbackError != null)
-          Container(
-            width: double.infinity,
-            color: Colors.red.shade100,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              children: [
-                const Icon(Icons.error_outline, size: 16, color: Colors.red),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    _feedbackError!,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.bodySmall.copyWith(color: Colors.red),
+          )
+        else
+          ...list.map((c) => _ComplaintCard(complaint: c)).toList(),
+      ],
+    );
+  }
+
+  List<_Complaint> _applyComplaintFilters(List<_Complaint> items) {
+    Iterable<_Complaint> out = items;
+    final String? currentUid = FirebaseAuth.instance.currentUser?.uid;
+    if (_searchText.isNotEmpty) {
+      final q = _searchText.toLowerCase();
+      out = out.where(
+        (c) =>
+            c.title.toLowerCase().contains(q) ||
+            c.description.toLowerCase().contains(q) ||
+            c.category.toLowerCase().contains(q),
+      );
+    }
+    if (_onlyMine && currentUid != null) {
+      out = out.where((c) => c.userId == currentUid);
+    } else if (_onlyMine && currentUid == null) {
+      // If user not signed-in and filter is enabled, show none
+      out = const <_Complaint>[];
+    }
+    if (_filterStatuses.isNotEmpty) {
+      out = out.where((c) => _filterStatuses.contains(_statusToText(c.status)));
+    }
+    if (_filterCategories.isNotEmpty) {
+      out = out.where((c) => _filterCategories.contains(c.category));
+    }
+    if (_filterPriorities.isNotEmpty) {
+      out = out.where((c) => _filterPriorities.contains(c.priority));
+    }
+    final list = out.toList();
+    if (_sortBy == 'Newest') {
+      list.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    } else if (_sortBy == 'Oldest') {
+      list.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+    } else if (_sortBy == 'Priority High→Low') {
+      int prio(String p) =>
+          {'High': 3, 'Urgent': 4, 'Medium': 2, 'Low': 1}[p] ?? 0;
+      list.sort((a, b) => prio(b.priority).compareTo(prio(a.priority)));
+    }
+    return list;
+  }
+
+  String _statusToText(ComplaintStatus s) {
+    switch (s) {
+      case ComplaintStatus.pending:
+        return 'Pending';
+      case ComplaintStatus.inProgress:
+        return 'Processing';
+      case ComplaintStatus.resolved:
+        return 'Resolved';
+      case ComplaintStatus.closed:
+        return 'Closed';
+    }
+  }
+
+  void _openFilterSheet() async {
+    // Minimal filter: Status and Sort only
+    final statuses = ['Pending', 'Processing', 'Resolved'];
+
+    final tmpStatuses = Set<String>.from(_filterStatuses);
+    String tmpSort = _sortBy;
+    bool tmpOnlyMine = _onlyMine;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setModalState) {
+            return Container(
+              decoration: BoxDecoration(color: AppColors.white),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  16.w,
+                  12.h,
+                  16.w,
+                  16.h + MediaQuery.of(ctx).padding.bottom,
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Filter Complaints',
+                            style: AppTextStyles.headlineMedium,
+                          ),
+                          const Spacer(),
+                          TextButton(
+                            onPressed: () {
+                              setState(() {
+                                _filterStatuses.clear();
+                                _sortBy = 'Newest';
+                              });
+                              Navigator.pop(ctx);
+                            },
+                            child: const Text('Reset'),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 8.h),
+                      Text('Visibility', style: AppTextStyles.bodyMediumBold),
+                      Wrap(
+                        spacing: 8.w,
+                        children: [
+                          ChoiceChip(
+                            label: const Text('Only my complaints'),
+                            selected: tmpOnlyMine,
+                            selectedColor: AppColors.primaryRed.withOpacity(
+                              0.05,
+                            ),
+                            backgroundColor: Colors.white,
+                            labelStyle: TextStyle(
+                              color:
+                                  tmpOnlyMine
+                                      ? AppColors.iconColor
+                                      : Colors.grey[700],
+                            ),
+                            onSelected:
+                                (_) => setModalState(
+                                  () => tmpOnlyMine = !tmpOnlyMine,
+                                ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 12.h),
+                      Text('Status', style: AppTextStyles.bodyMediumBold),
+                      Wrap(
+                        spacing: 8.w,
+                        runSpacing: 6.h,
+
+                        children:
+                            statuses
+                                .map(
+                                  (s) => FilterChip(
+                                    label: Text(s),
+                                    selected: tmpStatuses.contains(s),
+                                    selectedColor: AppColors.primaryRed
+                                        .withOpacity(0.05),
+                                    checkmarkColor: AppColors.iconColor,
+                                    backgroundColor: Colors.white,
+                                    labelStyle: TextStyle(
+                                      color:
+                                          tmpStatuses.contains(s)
+                                              ? AppColors.iconColor
+                                              : Colors.grey[700],
+                                    ),
+                                    onSelected: (sel) {
+                                      setModalState(() {
+                                        if (sel) {
+                                          tmpStatuses.add(s);
+                                        } else {
+                                          tmpStatuses.remove(s);
+                                        }
+                                      });
+                                    },
+                                  ),
+                                )
+                                .toList(),
+                      ),
+                      SizedBox(height: 12.h),
+                      Text('Sort by', style: AppTextStyles.bodyMediumBold),
+                      Wrap(
+                        spacing: 8.w,
+                        children:
+                            ['Newest', 'Oldest']
+                                .map(
+                                  (s) => ChoiceChip(
+                                    label: Text(s),
+                                    selected: tmpSort == s,
+                                    selectedColor: AppColors.primaryRed
+                                        .withOpacity(0.05),
+                                    backgroundColor: Colors.white,
+                                    labelStyle: TextStyle(
+                                      color:
+                                          tmpSort == s
+                                              ? AppColors.iconColor
+                                              : Colors.grey[700],
+                                    ),
+                                    onSelected:
+                                        (_) => setModalState(() => tmpSort = s),
+                                  ),
+                                )
+                                .toList(),
+                      ),
+                      SizedBox(height: 16.h),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryRed,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(vertical: 12.h),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.r),
+                            ),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _filterStatuses
+                                ..clear()
+                                ..addAll(tmpStatuses);
+                              _sortBy = tmpSort;
+                              _onlyMine = tmpOnlyMine;
+                            });
+                            Navigator.pop(ctx);
+                          },
+                          child: const Text('Apply Filters'),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ),
-        _buildFeedbackList(),
-      ],
-    );
-  }
-
-  Widget _buildQuickActions(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: _ActionCard(
-            icon: Icons.report_problem,
-            title: 'Register Complaint',
-            subtitle: 'Report maintenance, cleanliness issues',
-            onTap: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const RegisterComplaintScreen(),
-                ),
-              );
-            },
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _ActionCard(
-            icon: Icons.rate_review,
-            title: 'Submit Feedback',
-            subtitle: 'Rate services or give suggestions',
-            onTap: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const FeedbackScreen()),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFeedbackActions(BuildContext context) {
-    return _ActionCard(
-      icon: Icons.rate_review,
-      title: 'Submit New Feedback',
-      subtitle: 'Rate services or give suggestions',
-      onTap: () async {
-        await Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const FeedbackScreen()),
+              ),
+            );
+          },
         );
       },
     );
   }
-
-  Widget _buildFeedbackList() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Your Feedback', style: AppTextStyles.bodyMediumBold),
-        const SizedBox(height: 12),
-        if (_feedbacks.isEmpty && !_isLoadingFeedback)
-          const Card(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(
-                'No feedback submitted yet. Tap "Submit New Feedback" to get started.',
-              ),
-            ),
-          )
-        else
-          ..._feedbacks.map((f) => _FeedbackCard(feedback: f)).toList(),
-      ],
-    );
-  }
-
-  Widget _buildComplaintsList() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Your Complaints', style: AppTextStyles.bodyMediumBold),
-        const SizedBox(height: 12),
-        if (_complaints.isEmpty && !_isLoadingComplaints)
-          const Card(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(
-                'No complaints yet. Tap "Register Complaint" to get started.',
-              ),
-            ),
-          )
-        else
-          ..._complaints.map((c) => _ComplaintCard(complaint: c)).toList(),
-      ],
-    );
-  }
 }
 
-class _ActionCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  const _ActionCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.primaryRed.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.primaryRed.withOpacity(0.2)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppColors.primaryRed.withOpacity(0.15),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: AppColors.primaryRed),
-            ),
-            const SizedBox(height: 12),
-            Text(title, style: AppTextStyles.bodyMediumBold),
-            const SizedBox(height: 4),
-            Text(subtitle, style: AppTextStyles.bodySmall),
-          ],
-        ),
-      ),
-    );
-  }
-}
+// Removed _ActionCard; not used anymore
 
 class _ComplaintCard extends StatelessWidget {
   final _Complaint complaint;
@@ -569,92 +658,99 @@ class _ComplaintCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    complaint.title,
-                    style: AppTextStyles.bodyMediumBold,
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (_) => ComplaintDetailScreen(
+                  complaint: ComplaintLite(
+                    id: complaint.id,
+                    userId: complaint.userId,
+                    title: complaint.title,
+                    description: complaint.description,
+                    status: complaint.status,
+                    timestamp: complaint.timestamp,
                   ),
                 ),
-                _StatusChip(status: complaint.status),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryRed.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    complaint.category,
-                    style: const TextStyle(
-                      color: AppColors.primaryRed,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
+          ),
+        );
+      },
+      child: Card(
+        margin: EdgeInsets.only(bottom: 10.h),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(4.r),
+          side: BorderSide(color: AppColors.primaryRed.withOpacity(0.3)),
+        ),
+        elevation: 1,
+        color: AppColors.white,
+        child: Padding(
+          padding: EdgeInsets.all(14.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      complaint.title,
+                      style: AppTextStyles.bodyMediumBold.copyWith(
+                        fontSize: 16.sp,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
+                  _StatusChip(status: complaint.status),
+                ],
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                complaint.description,
+                style: AppTextStyles.bodySmall,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              SizedBox(height: 8.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Submitted ${_formatTime(complaint.timestamp)}',
+                    style: TextStyle(fontSize: 11.sp, color: Colors.grey),
                   ),
-                  decoration: BoxDecoration(
-                    color: _getPriorityColor(complaint.priority).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+                  FutureBuilder<DatabaseEvent>(
+                    future:
+                        FirebaseDatabase.instance
+                            .ref('users/${complaint.userId}')
+                            .once(),
+                    builder: (context, snapshot) {
+                      final userData = snapshot.data?.snapshot.value;
+                      String name = 'User';
+                      if (userData is Map) {
+                        name =
+                            userData['name']?.toString() ??
+                            userData['displayName']?.toString() ??
+                            userData['email']?.toString().split('@')[0] ??
+                            'User';
+                      }
+                      return Text(
+                        name,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.iconColor,
+                        ),
+                      );
+                    },
                   ),
-                  child: Text(
-                    complaint.priority,
-                    style: TextStyle(
-                      color: _getPriorityColor(complaint.priority),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(complaint.description, style: AppTextStyles.bodySmall),
-            const SizedBox(height: 8),
-            Text(
-              'Submitted ${_formatTime(complaint.timestamp)}',
-              style: const TextStyle(fontSize: 11, color: Colors.grey),
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Color _getPriorityColor(String priority) {
-    switch (priority.toLowerCase()) {
-      case 'high':
-        return Colors.red;
-      case 'medium':
-        return Colors.orange;
-      case 'low':
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
-  }
+  // Removed: priority chip coloring; category/priority hidden on list
 
   String _formatTime(DateTime dt) {
     final now = DateTime.now();
@@ -702,16 +798,16 @@ class _StatusChip extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(4.r),
       ),
       child: Text(
         text,
         style: TextStyle(
           color: color,
-          fontSize: 11,
+          fontSize: 11.sp,
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -721,6 +817,7 @@ class _StatusChip extends StatelessWidget {
 
 class _Complaint {
   final String id;
+  final String userId;
   final String title;
   final String category;
   final String description;
@@ -730,6 +827,7 @@ class _Complaint {
 
   _Complaint({
     required this.id,
+    required this.userId,
     required this.title,
     required this.category,
     required this.description,
@@ -740,216 +838,3 @@ class _Complaint {
 }
 
 enum ComplaintStatus { pending, inProgress, resolved, closed }
-
-class _Feedback {
-  final String id;
-  final double overallRating;
-  final double maintenanceRating;
-  final double securityRating;
-  final double cleanlinessRating;
-  final String comments;
-  final String? reply;
-  final DateTime timestamp;
-  final DateTime? replyTimestamp;
-
-  _Feedback({
-    required this.id,
-    required this.overallRating,
-    required this.maintenanceRating,
-    required this.securityRating,
-    required this.cleanlinessRating,
-    required this.comments,
-    this.reply,
-    this.replyTimestamp,
-    required this.timestamp,
-  });
-}
-
-class _FeedbackCard extends StatelessWidget {
-  final _Feedback feedback;
-
-  const _FeedbackCard({required this.feedback});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Feedback Submitted',
-                    style: AppTextStyles.bodyMediumBold.copyWith(
-                      color: AppColors.primaryRed,
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryRed.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '${feedback.overallRating.toStringAsFixed(1)}/5',
-                    style: const TextStyle(
-                      color: AppColors.primaryRed,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _buildRatingRow('Overall', feedback.overallRating),
-            _buildRatingRow('Maintenance', feedback.maintenanceRating),
-            _buildRatingRow('Security', feedback.securityRating),
-            _buildRatingRow('Cleanliness', feedback.cleanlinessRating),
-            if (feedback.comments.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Text(
-                'Comments:',
-                style: AppTextStyles.bodySmall.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                feedback.comments,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: Colors.black87,
-                  height: 1.3,
-                ),
-              ),
-            ],
-            const SizedBox(height: 12),
-            Text(
-              'Submitted ${_formatTime(feedback.timestamp)}',
-              style: const TextStyle(fontSize: 11, color: Colors.grey),
-            ),
-            if (feedback.reply != null) ...[
-              const SizedBox(height: 12),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryRed.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.primaryRed.withOpacity(0.2)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.reply,
-                          size: 18,
-                          color: AppColors.primaryRed,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Admin Response',
-                          style: AppTextStyles.bodyMediumBold.copyWith(
-                            color: AppColors.primaryRed,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      feedback.reply!,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: Colors.black87,
-                        height: 1.3,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Replied: ${_formatTime(feedback.replyTimestamp ?? DateTime.now())}',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: Colors.grey,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRatingRow(String label, double rating) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 80,
-            child: Text(
-              label,
-              style: AppTextStyles.bodySmall.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Row(
-              children: List.generate(5, (index) {
-                return Icon(
-                  index < rating.floor()
-                      ? Icons.star
-                      : (index < rating.ceil() && rating % 1 != 0)
-                          ? Icons.star_half
-                          : Icons.star_border,
-                  size: 16,
-                  color: AppColors.primaryRed,
-                );
-              }),
-            ),
-          ),
-          SizedBox(
-            width: 30,
-            child: Text(
-              rating.toStringAsFixed(1),
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.primaryRed,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatTime(DateTime dt) {
-    final now = DateTime.now();
-    final difference = now.difference(dt);
-
-    if (difference.inDays > 0) {
-      return '${difference.inDays} day${difference.inDays == 1 ? '' : 's'} ago';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours} hour${difference.inHours == 1 ? '' : 's'} ago';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} minute${difference.inMinutes == 1 ? '' : 's'} ago';
-    } else {
-      return 'Just now';
-    }
-  }
-}

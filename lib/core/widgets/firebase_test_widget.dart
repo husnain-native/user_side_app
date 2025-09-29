@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 
 class FirebaseTestWidget extends StatefulWidget {
@@ -66,31 +66,28 @@ class _FirebaseTestWidgetState extends State<FirebaseTestWidget> {
         foregroundColor: Colors.white,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (_isLoading)
               const Center(child: CircularProgressIndicator())
             else
-              Text(
-                _status,
-                style: const TextStyle(fontSize: 16),
-              ),
-            const SizedBox(height: 20),
-            const Text(
+              Text(_status, style: TextStyle(fontSize: 16.sp)),
+            SizedBox(height: 20.h),
+            Text(
               'Firebase Authentication Status:',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 10),
-            const Text(
+            SizedBox(height: 10.h),
+            Text(
               '• If you see "Firebase is initialized" - Firebase is working\n'
               '• If you see "User is signed in" - Authentication is working\n'
               '• The reCAPTCHA warnings in logs are normal for development\n'
               '• App Check warnings are also normal for development',
-              style: TextStyle(fontSize: 14),
+              style: TextStyle(fontSize: 14.sp),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             ElevatedButton(
               onPressed: _checkFirebaseStatus,
               child: const Text('Refresh Status'),

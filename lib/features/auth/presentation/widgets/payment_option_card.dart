@@ -19,35 +19,65 @@ class PaymentOptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.r),
-      ),
-      child: ListTile(
-        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-        leading: Container(
-          padding: EdgeInsets.all(8.w),
-          decoration: BoxDecoration(
-            color: AppColors.primaryRed.withOpacity(0.1),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, color: AppColors.primaryRed, size: 24.w),
-        ),
-        title: Text(
-          title,
-          style: AppTextStyles.bodyLarge.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: AppTextStyles.bodySmall.copyWith(
-            color: Colors.grey[600],
-          ),
-        ),
-        trailing: Icon(Icons.arrow_forward_ios, size: 16.w, color: Colors.grey),
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(2.r),
+      elevation: 1,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(2.r),
         onTap: onTap,
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(2.r),
+            border: Border.all(color: const Color(0xFFE5E7EB)),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 36.w,
+                height: 36.w,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryRed.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                alignment: Alignment.center,
+                child: Icon(icon, color: AppColors.primaryRed, size: 20.w),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.bodyMediumBold,
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      subtitle,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(width: 8.w),
+              Icon(
+                Icons.arrow_forward_ios,
+                size: 14.w,
+                color: Colors.grey[600],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

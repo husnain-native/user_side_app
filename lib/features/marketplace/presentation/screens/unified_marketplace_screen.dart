@@ -83,7 +83,7 @@ class _UnifiedMarketplaceScreenState extends State<UnifiedMarketplaceScreen> {
                     itemBuilder: (_, i) {
                       final e = items[i];
                       return SizedBox(
-                        width: 280.w,
+                        width: 290.w,
                         child: MarketItemCard(item: e, onTap: () {}),
                       );
                     },

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:park_chatapp/constants/app_colors.dart';
 import 'package:park_chatapp/constants/app_text_styles.dart';
@@ -14,39 +15,36 @@ class SignInRequired extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(24.w),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.lock_outline, size: 56, color: Colors.grey),
-            const SizedBox(height: 12),
+            Icon(Icons.lock_outline, size: 56.r, color: Colors.grey),
+            SizedBox(height: 12.h),
             Text(
               message ?? 'Sign in to continue',
               style: AppTextStyles.bodyLarge,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             const Text(
               'This feature is available for signed-in users.',
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.white,
                 // foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadiusGeometry.circular(1),
-                  
+
                   side: BorderSide.none,
                 ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 18,
-                  vertical: 12,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 12.h),
               ),
               onPressed: () => _goToLogin(context),
-              icon: const Icon(Icons.login),
+              icon: Icon(Icons.login, size: 18.r),
               label: const Text('Sign in'),
             ),
           ],
@@ -79,40 +77,40 @@ Future<bool> ensureSignedIn(BuildContext context) async {
     ),
     builder: (ctx) {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+        padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 24.h),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 40,
-              height: 4,
+              width: 40.w,
+              height: 4.h,
               decoration: BoxDecoration(
                 color: Colors.black12,
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(2.r),
               ),
             ),
-            const SizedBox(height: 16),
-            const Icon(Icons.lock_outline, size: 40, color: Colors.grey),
-            const SizedBox(height: 12),
+            SizedBox(height: 16.h),
+            Icon(Icons.lock_outline, size: 40.r, color: Colors.grey),
+            SizedBox(height: 12.h),
             const Text(
               'Sign in to continue',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             const Text(
               'You need an account to use this feature.',
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryRed,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: EdgeInsets.symmetric(vertical: 12.h),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(10.r),
                   ),
                 ),
                 onPressed: () {
@@ -124,7 +122,7 @@ Future<bool> ensureSignedIn(BuildContext context) async {
                 child: const Text('Sign in'),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
               child: const Text('Not now'),

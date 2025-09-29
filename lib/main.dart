@@ -1,24 +1,15 @@
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 import 'package:firebase_core/firebase_core.dart';
-import 'package:park_chatapp/features/SplashScreen/Splash_screen.dart';
-import 'package:park_chatapp/features/auth/presentation/screens/login_screen.dart';
 import 'package:park_chatapp/features/chat/presentation/screens/direct_chat_screen.dart';
-import 'package:park_chatapp/onboarding/onboarding_screen1.dart';
-import 'package:park_chatapp/onboarding/screens/onboarding_screen.dart';
-import 'package:park_chatapp/onboarding/widgets/onboarding_page.dart';
 import 'firebase_options.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:park_chatapp/core/widgets/auth_wrapper.dart';
 import 'package:park_chatapp/features/chat/presentation/screens/create_group_screen.dart';
 import 'package:park_chatapp/features/chat/presentation/screens/group_chat_screen.dart';
-import 'package:park_chatapp/features/chat/presentation/screens/direct_chat_screen.dart';
 import 'package:park_chatapp/features/chat/domain/models/group.dart';
 import 'package:park_chatapp/features/property/presentation/screens/AddEditPropertyScreen.dart';
 import 'package:park_chatapp/features/property/presentation/screens/my_listings_screen.dart';
-// import 'package:park_chatapp/features/auth/presentation/screens/login_screen.dart';
-// import 'package:park_chatapp/view/auth/signup_screen.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -58,8 +49,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ScreenUtilInit(
       designSize: const Size(
-        360,
-        690,
+        412,
+        915,
       ), // Design dimensions (default is iPhone 13 size)
       minTextAdapt: true,
       splitScreenMode: true,

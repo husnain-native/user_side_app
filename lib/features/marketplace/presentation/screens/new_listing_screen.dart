@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:park_chatapp/constants/app_colors.dart';
 import 'package:park_chatapp/constants/app_text_styles.dart';
 import 'package:park_chatapp/features/marketplace/domain/models/listing.dart';
@@ -57,7 +58,7 @@ class _NewListingScreenState extends State<NewListingScreen> {
         child: Form(
           key: _formKey,
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             children: [
               TextFormField(
                 controller: _titleCtrl,
@@ -65,7 +66,7 @@ class _NewListingScreenState extends State<NewListingScreen> {
                 validator:
                     (v) => v == null || v.trim().isEmpty ? 'Required' : null,
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               TextFormField(
                 controller: _descriptionCtrl,
                 maxLines: 4,
@@ -73,7 +74,7 @@ class _NewListingScreenState extends State<NewListingScreen> {
                 validator:
                     (v) => v == null || v.trim().isEmpty ? 'Required' : null,
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               Row(
                 children: [
                   Expanded(
@@ -93,7 +94,7 @@ class _NewListingScreenState extends State<NewListingScreen> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                   Row(
                     children: [
                       const Text('Negotiable'),
@@ -106,7 +107,7 @@ class _NewListingScreenState extends State<NewListingScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               DropdownButtonFormField<ListingCategory>(
                 value: _selectedCategory,
                 items:
@@ -122,7 +123,7 @@ class _NewListingScreenState extends State<NewListingScreen> {
                       () => _selectedCategory = v ?? _selectedCategory,
                     ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               DropdownButtonFormField<ListingCondition>(
                 value: _selectedCondition,
                 items:
@@ -138,7 +139,7 @@ class _NewListingScreenState extends State<NewListingScreen> {
                       () => _selectedCondition = v ?? _selectedCondition,
                     ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               TextFormField(
                 controller: _locationCtrl,
                 decoration: const InputDecoration(labelText: 'Location'),
@@ -154,7 +155,7 @@ class _NewListingScreenState extends State<NewListingScreen> {
                       decoration: const InputDecoration(labelText: 'Image URL'),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   ElevatedButton(
                     onPressed: _addImageUrl,
                     style: ElevatedButton.styleFrom(
@@ -167,34 +168,34 @@ class _NewListingScreenState extends State<NewListingScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               if (_imageUrls.isNotEmpty)
                 SizedBox(
-                  height: 90,
+                  height: 90.h,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemBuilder: (_, i) => _imagePreview(_imageUrls[i], i),
-                    separatorBuilder: (_, __) => const SizedBox(width: 8),
+                    separatorBuilder: (_, __) => SizedBox(width: 8.w),
                     itemCount: _imageUrls.length,
                   ),
                 ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               Text('Seller Info', style: AppTextStyles.bodyMediumBold),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               TextFormField(
                 controller: _sellerNameCtrl,
                 decoration: const InputDecoration(labelText: 'Seller Name'),
                 validator:
                     (v) => v == null || v.trim().isEmpty ? 'Required' : null,
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               TextFormField(
                 controller: _sellerIdCtrl,
                 decoration: const InputDecoration(labelText: 'Seller ID'),
                 validator:
                     (v) => v == null || v.trim().isEmpty ? 'Required' : null,
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -202,9 +203,9 @@ class _NewListingScreenState extends State<NewListingScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryRed,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
                   ),
                   child: const Text('Create Listing'),
@@ -221,26 +222,26 @@ class _NewListingScreenState extends State<NewListingScreen> {
     return Stack(
       children: [
         ClipRRect(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
           child: Container(
-            height: 90,
-            width: 120,
+            height: 90.h,
+            width: 120.w,
             color: Colors.grey.shade200,
             child: _previewImage(url),
           ),
         ),
         Positioned(
-          right: 4,
-          top: 4,
+          right: 4.w,
+          top: 4.h,
           child: InkWell(
             onTap: () => setState(() => _imageUrls.removeAt(index)),
             child: Container(
-              padding: const EdgeInsets.all(4),
+              padding: EdgeInsets.all(4.w),
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.5),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.close, color: Colors.white, size: 16),
+              child: Icon(Icons.close, color: Colors.white, size: 16.r),
             ),
           ),
         ),

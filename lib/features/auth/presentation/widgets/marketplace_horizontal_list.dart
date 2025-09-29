@@ -40,29 +40,25 @@ class MarketplaceHorizontalList extends StatelessWidget {
               ],
             ),
 
-              
-GestureDetector(
-  onTap: () {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const MarketplaceScreen(),
-      ),
-    );
-  },
-  child: Container(
-    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 6), // optional spacing inside container
-    decoration: BoxDecoration(
-      color: AppColors.lightGrey,
-      shape: BoxShape.rectangle, // makes it round
-      borderRadius: BorderRadius.circular(2)
-    ),
-    child: Icon(
-      Icons.arrow_forward,
-      size: 18.sp,
-    ),
-  ),
-)
-
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const MarketplaceScreen()),
+                );
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 6.w,
+                  vertical: 6.h,
+                ), // optional spacing inside container
+                decoration: BoxDecoration(
+                  color: AppColors.lightGrey,
+                  shape: BoxShape.rectangle, // makes it round
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+                child: Icon(Icons.arrow_forward, size: 18.r),
+              ),
+            ),
           ],
         ),
         SizedBox(height: 10.h),

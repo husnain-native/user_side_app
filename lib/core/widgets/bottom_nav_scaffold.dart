@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:park_chatapp/constants/app_colors.dart';
 import 'package:park_chatapp/features/auth/presentation/screens/home_screen.dart';
 import 'package:park_chatapp/features/marketplace/presentation/screens/unified_marketplace_screen.dart';
@@ -82,13 +83,13 @@ class _BottomBar extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, -2),
+            blurRadius: 12.r,
+            offset: Offset(0, -2.h),
           ),
         ],
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16.r),
+          topRight: Radius.circular(16.r),
         ),
       ),
       child: SafeArea(
@@ -101,12 +102,12 @@ class _BottomBar extends StatelessWidget {
           selectedItemColor: AppColors.primaryRed,
           unselectedItemColor: const Color(0xFF4A4A68),
           onTap: onTap,
-          items: const [
-            BottomNavigationBarItem(
+          items: [
+            const BottomNavigationBarItem(
               icon: Icon(Icons.home_filled),
               label: 'Home',
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.dashboard_customize_outlined),
               label: 'Categories',
             ),
@@ -115,11 +116,11 @@ class _BottomBar extends StatelessWidget {
               activeIcon: _BadgeIcon(icon: Icons.favorite, count: 2),
               label: 'Favorite',
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.local_offer_outlined),
               label: 'Brands',
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.settings_outlined),
               label: 'Settings',
             ),
@@ -141,24 +142,24 @@ class _BadgeIcon extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        Icon(icon),
+        Icon(icon, size: 24.r),
         if (count > 0)
           Positioned(
-            right: -8,
-            top: -4,
+            right: -8.w,
+            top: -4.h,
             child: Container(
-              padding: const EdgeInsets.all(2),
+              padding: EdgeInsets.all(2.w),
               decoration: const BoxDecoration(
                 color: AppColors.primaryRed,
                 shape: BoxShape.circle,
               ),
-              constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+              constraints: BoxConstraints(minWidth: 16.w, minHeight: 16.w),
               child: Center(
                 child: Text(
                   count.toString(),
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
-                    fontSize: 10,
+                    fontSize: 10.sp,
                     fontWeight: FontWeight.w700,
                   ),
                 ),

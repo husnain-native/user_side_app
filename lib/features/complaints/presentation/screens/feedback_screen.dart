@@ -15,9 +15,6 @@ class FeedbackScreen extends StatefulWidget {
 class _FeedbackScreenState extends State<FeedbackScreen> {
   final TextEditingController _feedbackController = TextEditingController();
   double _overallRating = 3.0;
-  double _maintenanceRating = 3.0;
-  double _securityRating = 3.0;
-  double _cleanlinessRating = 3.0;
   bool _isSubmitting = false;
 
   @override
@@ -29,122 +26,136 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.white,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryRed,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.black),
         title: Text(
           'Submit Feedback',
-          style: AppTextStyles.bodyLarge.copyWith(color: Colors.white),
+          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.iconColor),
         ),
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            _buildRatingSection('Overall Experience', _overallRating, (value) {
-              setState(() => _overallRating = value);
-            }),
-            const SizedBox(height: 16),
-            _buildRatingSection('Maintenance Services', _maintenanceRating, (
-              value,
-            ) {
-              setState(() => _maintenanceRating = value);
-            }),
-            const SizedBox(height: 16),
-            _buildRatingSection('Security Services', _securityRating, (value) {
-              setState(() => _securityRating = value);
-            }),
-            const SizedBox(height: 16),
-            _buildRatingSection('Cleanliness', _cleanlinessRating, (value) {
-              setState(() => _cleanlinessRating = value);
-            }),
-            const SizedBox(height: 24),
-            Text('Additional Comments', style: AppTextStyles.bodyMediumBold),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _feedbackController,
-              minLines: 4,
-              maxLines: 8,
-              decoration: const InputDecoration(
-                hintText: 'Share your suggestions or additional feedback',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryRed,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(16.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Card(
+                color: AppColors.white,
+                elevation: 1,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                  side: BorderSide(
+                    color: AppColors.primaryRed.withOpacity(0.2),
                   ),
                 ),
-                onPressed: _isSubmitting ? null : _submit,
-                child: _isSubmitting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Text(
-                        'Submit Feedback',
-                        style: TextStyle(color: Colors.white),
+                child: Padding(
+                  padding: EdgeInsets.all(16.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Overall Experience',
+                        style: AppTextStyles.bodyMediumBold,
                       ),
+                      SizedBox(height: 8.h),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Poor', style: AppTextStyles.bodySmall),
+                          Expanded(
+                            child: Slider(
+                              value: _overallRating,
+                              min: 1.0,
+                              max: 5.0,
+                              divisions: 4,
+                              activeColor: AppColors.primaryRed,
+                              onChanged:
+                                  (v) => setState(() => _overallRating = v),
+                            ),
+                          ),
+                          Text('Excellent', style: AppTextStyles.bodySmall),
+                        ],
+                      ),
+                      Align(
+                        alignment: Alignment.center,
+                        child: Text(
+                          '${_overallRating.toInt()}/5',
+                          style: AppTextStyles.bodyMediumBold.copyWith(
+                            color: AppColors.primaryRed,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ],
+              SizedBox(height: 16.h),
+              Text('Additional Comments', style: AppTextStyles.bodyMediumBold),
+              SizedBox(height: 8.h),
+              Card(
+                color: AppColors.white,
+                elevation: 1,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                  side: BorderSide(
+                    color: AppColors.primaryRed.withOpacity(0.2),
+                  ),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(12.w),
+                  child: TextField(
+                    controller: _feedbackController,
+                    minLines: 5,
+                    maxLines: 8,
+                    decoration: const InputDecoration(
+                      hintText: 'Share your suggestions or additional feedback',
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryRed,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    elevation: 0,
+                  ),
+                  onPressed: _isSubmitting ? null : _submit,
+                  icon:
+                      _isSubmitting
+                          ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                          : const Icon(Icons.send),
+                  label: Text(
+                    _isSubmitting ? 'Submitting...' : 'Submit Feedback',
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildRatingSection(
-    String title,
-    double rating,
-    ValueChanged<double> onChanged,
-  ) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: AppTextStyles.bodyMediumBold),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Poor', style: AppTextStyles.bodySmall),
-                Expanded(
-                  child: Slider(
-                    value: rating,
-                    min: 1.0,
-                    max: 5.0,
-                    divisions: 4,
-                    activeColor: AppColors.primaryRed,
-                    onChanged: onChanged,
-                  ),
-                ),
-                Text('Excellent', style: AppTextStyles.bodySmall),
-              ],
-            ),
-            Center(
-              child: Text(
-                '${rating.toInt()}/5',
-                style: AppTextStyles.bodyMediumBold.copyWith(
-                  color: AppColors.primaryRed,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // Removed old multi-section rating builder; keeping only overall rating
 
   void _submit() async {
     if (_isSubmitting) return;
@@ -161,27 +172,24 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
 
     final Map<String, dynamic> feedbackData = {
       'overallRating': _overallRating,
-      'maintenanceRating': _maintenanceRating,
-      'securityRating': _securityRating,
-      'cleanlinessRating': _cleanlinessRating,
+      // Include legacy fields to satisfy current DB rules validation
+      'maintenanceRating': _overallRating,
+      'securityRating': _overallRating,
+      'cleanlinessRating': _overallRating,
       'comments': _feedbackController.text.trim(),
       'userId': user.uid,
       'timestamp': DateTime.now().toIso8601String(),
     };
 
     try {
-      final feedbackRef = FirebaseDatabase.instance
-          .ref('feedback/${user.uid}')
-          .push();
+      final feedbackRef =
+          FirebaseDatabase.instance.ref('feedback/${user.uid}').push();
       await feedbackRef.set(feedbackData);
 
       if (!mounted) return;
       _feedbackController.clear();
       setState(() {
         _overallRating = 3.0;
-        _maintenanceRating = 3.0;
-        _securityRating = 3.0;
-        _cleanlinessRating = 3.0;
       });
       Navigator.pop(context, feedbackData);
       _showSuccessModal(
@@ -191,9 +199,9 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to submit feedback: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to submit feedback: $e')));
     } finally {
       if (mounted) {
         setState(() => _isSubmitting = false);

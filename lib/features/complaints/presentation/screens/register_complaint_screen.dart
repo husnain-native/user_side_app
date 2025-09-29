@@ -41,110 +41,209 @@ class _RegisterComplaintScreenState extends State<RegisterComplaintScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.white,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryRed,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.black),
         title: Text(
           'Register Complaint',
-          style: AppTextStyles.bodyLarge.copyWith(color: Colors.white),
+          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.iconColor),
         ),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(16.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Title', style: AppTextStyles.bodyMediumBold),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _titleController,
-                decoration: const InputDecoration(
-                  hintText: 'Brief description of the issue',
-                  border: OutlineInputBorder(),
+              _buildInfoBanner(),
+              SizedBox(height: 12.h),
+              Card(
+                color: AppColors.white,
+                elevation: 1,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                  side: BorderSide(
+                    color: AppColors.primaryRed.withOpacity(0.2),
+                  ),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(12.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _labeledField(
+                        label: 'Title',
+                        child: TextField(
+                          controller: _titleController,
+                          decoration: InputDecoration(
+                            prefixIcon: const Icon(Icons.title_outlined),
+                            hintText: 'Brief description of the issue',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8.r),
+                            ),
+                          ),
+                        ),
+                      ),
+                      // SizedBox(height: 12.h),
+                      // _labeledField(
+                      //   label: 'Category',
+                      //   child: Wrap(
+                      //     spacing: 8.w,
+                      //     runSpacing: 6.h,
+                      //     children:
+                      //         _categories
+                      //             .map(
+                      //               (c) => ChoiceChip(
+                      //                 label: Text(c),
+                      //                 selected: _selectedCategory == c,
+                      //                 onSelected:
+                      //                     (_) => setState(
+                      //                       () => _selectedCategory = c,
+                      //                     ),
+                      //               ),
+                      //             )
+                      //             .toList(),
+                      //   ),
+                      // ),
+                      // SizedBox(height: 12.h),
+                      // _labeledField(
+                      //   label: 'Priority',
+                        
+                      //   child: Wrap(
+                          
+                      //     spacing: 8.w,
+                      //     runSpacing: 6.h,
+                      //     children:
+                      //         _priorities
+                      //             .map(
+                      //               (p) => ChoiceChip(
+                      //                 label: Text(p),
+                      //                 selected: _selectedPriority == p,
+                      //                 onSelected:
+                      //                     (_) => setState(
+                      //                       () => _selectedPriority = p,
+                      //                     ),
+                      //               ),
+                      //             )
+                      //             .toList(),
+                      //   ),
+                      // ),
+                      SizedBox(height: 12.h),
+                      _labeledField(
+                        label: 'Description',
+                        helper:
+                            'Please provide detailed information so we can resolve it faster.',
+                        child: TextField(
+                          controller: _descriptionController,
+                          minLines: 4,
+                          maxLines: 8,
+                          decoration: InputDecoration(
+                            alignLabelWithHint: true,
+                            prefixIcon: const Icon(Icons.description_outlined),
+                            hintText: 'Describe the problem clearly',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8.r),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
-              Text('Category', style: AppTextStyles.bodyMediumBold),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                value: _selectedCategory,
-                decoration: const InputDecoration(border: OutlineInputBorder()),
-                items: _categories.map((String category) {
-                  return DropdownMenuItem<String>(
-                    value: category,
-                    child: Text(category),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  if (newValue != null) {
-                    setState(() {
-                      _selectedCategory = newValue;
-                    });
-                  }
-                },
-              ),
-              const SizedBox(height: 16),
-              Text('Priority', style: AppTextStyles.bodyMediumBold),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                value: _selectedPriority,
-                decoration: const InputDecoration(border: OutlineInputBorder()),
-                items: _priorities.map((String priority) {
-                  return DropdownMenuItem<String>(
-                    value: priority,
-                    child: Text(priority),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  if (newValue != null) {
-                    setState(() {
-                      _selectedPriority = newValue;
-                    });
-                  }
-                },
-              ),
-              const SizedBox(height: 16),
-              Text('Description', style: AppTextStyles.bodyMediumBold),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _descriptionController,
-                minLines: 4,
-                maxLines: 8,
-                decoration: const InputDecoration(
-                  hintText: 'Detailed description of the problem',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const Spacer(),
+              SizedBox(height: 16.h),
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
+                child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryRed,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 12.h),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
+                    elevation: 0,
                   ),
                   onPressed: _isSubmitting ? null : _submit,
-                  child: _isSubmitting
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text(
-                          'Submit Complaint',
-                          style: TextStyle(color: Colors.white),
-                        ),
+                  icon:
+                      _isSubmitting
+                          ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                          : const Icon(Icons.send),
+                  label: Text(
+                    _isSubmitting ? 'Submitting...' : 'Submit Complaint',
+                    style: const TextStyle(color: Colors.white),
+                  ),
                 ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildInfoBanner() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: AppColors.primaryRed.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: AppColors.primaryRed.withOpacity(0.2)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 28.r,
+            height: 28.r,
+            decoration: BoxDecoration(
+              color: AppColors.primaryRed.withOpacity(0.15),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.info_outline, color: AppColors.primaryRed),
+          ),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Text(
+              'Please ensure the details are accurate. Our team will review and update the status.',
+              style: AppTextStyles.bodySmall.copyWith(color: Colors.black87),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _labeledField({
+    required String label,
+    String? helper,
+    required Widget child,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: AppTextStyles.bodyMediumBold),
+        if (helper != null) ...[
+          SizedBox(height: 2.h),
+          Text(
+            helper,
+            style: AppTextStyles.bodySmall.copyWith(color: Colors.black54),
+          ),
+        ],
+        SizedBox(height: 8.h),
+        child,
+      ],
     );
   }
 
@@ -155,9 +254,9 @@ class _RegisterComplaintScreenState extends State<RegisterComplaintScreen> {
     if (_titleController.text.trim().isEmpty ||
         _descriptionController.text.trim().isEmpty) {
       setState(() => _isSubmitting = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please fill all fields')));
       return;
     }
 
@@ -181,9 +280,8 @@ class _RegisterComplaintScreenState extends State<RegisterComplaintScreen> {
     };
 
     try {
-      final complaintRef = FirebaseDatabase.instance
-          .ref('complaints/${user.uid}')
-          .push();
+      final complaintRef =
+          FirebaseDatabase.instance.ref('complaints/${user.uid}').push();
       await complaintRef.set(complaintData);
 
       if (!mounted) return;
@@ -201,9 +299,9 @@ class _RegisterComplaintScreenState extends State<RegisterComplaintScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to submit complaint: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to submit complaint: $e')));
     } finally {
       if (mounted) {
         setState(() => _isSubmitting = false);
