@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:park_chatapp/constants/app_colors.dart';
 import 'package:park_chatapp/constants/app_text_styles.dart';
-import 'package:park_chatapp/features/auth/presentation/widgets/payment_option_card.dart';
-import 'package:park_chatapp/features/auth/presentation/widgets/small_action_card.dart';
-import 'package:park_chatapp/features/auth/presentation/screens/payment_details_screen.dart';
+// Removed legacy widgets/imports after grid redesign
 import 'package:park_chatapp/features/auth/presentation/screens/statement_screen.dart';
 import 'package:park_chatapp/features/auth/presentation/screens/plot_installments_reference_screen.dart';
+import 'package:park_chatapp/features/auth/presentation/screens/utility_bill_types_screen.dart';
+// import 'package:park_chatapp/features/auth/presentation/screens/possession_charges_reference_screen.dart';
 import 'package:flutter/services.dart';
 // import 'package:park_chatapp/features/payments/presentation/widgets/account_card.dart';
 // import 'package:park_chatapp/features/payments/presentation/widgets/payment_option_card.dart';
@@ -16,29 +16,41 @@ class PaymentsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<_PaymentOption> paymentOptions = [
-      _PaymentOption(
-        icon: Icons.lightbulb_outline,
-        title: 'Pay Utility Bills',
-        subtitle: 'Electricity, Water, Gas',
+    final List<_GridOption> gridOptions = [
+      _GridOption(
+        title: 'Bill Payment',
+        icon: Icons.account_balance_wallet_outlined,
         onTap: () => _handleUtilityBills(context),
       ),
-      _PaymentOption(
-        icon: Icons.account_balance,
-        title: 'Pay Plot Installments',
-        subtitle: 'Monthly installment payments',
-        onTap: () => _handlePlotInstallments(context),
+      _GridOption(
+        title: 'Education',
+        icon: Icons.menu_book_outlined,
+        onTap: () {},
       ),
-      _PaymentOption(
-        icon: Icons.key,
-        title: 'Pay Possession Charges',
-        subtitle: 'Final possession fees',
-        onTap: () => _handlePossessionCharges(context),
+      _GridOption(
+        title: 'Possession Charges',
+        icon: Icons.receipt_long_outlined,
+        onTap: () {},
       ),
+      _GridOption(
+        title: 'Corporate',
+        icon: Icons.home_work_rounded,
+        onTap: () {},
+      ),
+      // _GridOption(
+      //   title: 'Possession Charges',
+      //   icon: Icons.smartphone_outlined,
+      //   onTap: () {},
+      // ),
+      // _GridOption(
+      //   title: 'Payments',
+      //   icon: Icons.account_balance_wallet,
+      //   onTap: () => _handlePlotInstallments(context),
+      // ),
     ];
 
-    final String accountNumber = 'PK-0011-2233-4455';
-    final double balance = 125430.75;
+    // final String accountNumber = 'PK-0011-2233-4455';
+    // final double balance = 125430.75;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -66,32 +78,45 @@ class PaymentsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _AccountSummaryCard(
-              accountNumber: accountNumber,
-              balance: balance,
-              onViewStatement: () => _openStatement(context),
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: SmallActionCard(
-                    icon: Icons.send,
-                    title: 'Transfer Money',
-                    color: AppColors.primaryRed,
-                    onTap: () => _handleTransferMoney(context),
-                  ),
-                ),
-                // SizedBox(width: 12.w),
-                Expanded(
-                  child: SmallActionCard(
-                    icon: Icons.request_page,
-                    title: 'Request Money',
-                    color: Colors.green,
-                    onTap: () => _handleRequestMoney(context),
-                  ),
-                ),
-              ],
-            ),
+            // _AccountSummaryCard(
+            //   accountNumber: accountNumber,
+            //   balance: balance,
+            //   onViewStatement: () => _openStatement(context),
+            // ),
+            // Row(
+            //   children: [
+            //     Expanded(
+            //       child: SmallActionCard(
+            //         icon: Icons.send,
+            //         title: 'Transfer Money',
+            //         color: AppColors.primaryRed,
+            //         onTap: () {
+            //           Navigator.of(context).push(
+            //             MaterialPageRoute(
+            //               builder:
+            //                   (_) => const PaymentTypesScreen(mode: 'transfer'),
+            //             ),
+            //           );
+            //         },
+            //       ),
+            //     ),
+            //     Expanded(
+            //       child: SmallActionCard(
+            //         icon: Icons.request_page,
+            //         title: 'Request Money',
+            //         color: Colors.green,
+            //         onTap: () {
+            //           Navigator.of(context).push(
+            //             MaterialPageRoute(
+            //               builder:
+            //                   (_) => const PaymentTypesScreen(mode: 'request'),
+            //             ),
+            //           );
+            //         },
+            //       ),
+            //     ),
+            //   ],
+            // ),
             SizedBox(height: 16.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -124,21 +149,20 @@ class PaymentsScreen extends StatelessWidget {
             //   onTap: () => _openStatement(context),
             // ),
             SizedBox(height: 12.h),
-            Column(
-              children:
-                  paymentOptions
-                      .map(
-                        (option) => Padding(
-                          padding: EdgeInsets.only(bottom: 12.h),
-                          child: PaymentOptionCard(
-                            icon: option.icon,
-                            title: option.title,
-                            subtitle: option.subtitle,
-                            onTap: option.onTap,
-                          ),
-                        ),
-                      )
-                      .toList(),
+            GridView.builder(
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 12.h,
+                crossAxisSpacing: 12.w,
+                childAspectRatio: 1.35,
+              ),
+              itemCount: gridOptions.length,
+              itemBuilder: (context, index) {
+                final item = gridOptions[index];
+                return _GridTile(option: item);
+              },
             ),
           ],
         ),
@@ -147,15 +171,9 @@ class PaymentsScreen extends StatelessWidget {
   }
 
   void _handleUtilityBills(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder:
-            (_) => const PaymentDetailsScreen(
-              title: 'Pay Utility Bills',
-              subtitle: 'Electricity, Water, Gas',
-            ),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const UtilityBillTypesScreen()));
   }
 
   void _handlePlotInstallments(BuildContext context) {
@@ -164,17 +182,7 @@ class PaymentsScreen extends StatelessWidget {
     );
   }
 
-  void _handlePossessionCharges(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder:
-            (_) => const PaymentDetailsScreen(
-              title: 'Pay Possession Charges',
-              subtitle: 'Final possession fees',
-            ),
-      ),
-    );
-  }
+  // Placeholder for future option
 
   void _openStatement(BuildContext context) {
     Navigator.of(
@@ -183,168 +191,60 @@ class PaymentsScreen extends StatelessWidget {
   }
 }
 
-class _PaymentOption {
+class _GridOption {
   final IconData icon;
   final String title;
-  final String subtitle;
   final VoidCallback onTap;
-
-  const _PaymentOption({
+  const _GridOption({
     required this.icon,
     required this.title,
-    required this.subtitle,
     required this.onTap,
   });
 }
 
-class _AccountSummaryCard extends StatelessWidget {
-  final String accountNumber;
-  final double balance;
-  final VoidCallback onViewStatement;
-
-  const _AccountSummaryCard({
-    required this.accountNumber,
-    required this.balance,
-    required this.onViewStatement,
-  });
-
+class _GridTile extends StatelessWidget {
+  final _GridOption option;
+  const _GridTile({required this.option});
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(12.r),
-          topRight: Radius.circular(12.r),
+    return InkWell(
+      onTap: option.onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color.fromARGB(255, 255, 255, 255),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: const Color(0xFFE5E7EB)),
         ),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: EdgeInsets.all(16.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.account_balance_wallet, color: AppColors.primaryRed),
-              SizedBox(width: 8.w),
-              Text(
-                'Account Summary',
-                style: AppTextStyles.bodyLarge.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+        padding: EdgeInsets.all(16.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 56.w,
+              height: 56.w,
+              decoration: BoxDecoration(
+                color: AppColors.iconColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12.r),
               ),
-              const Spacer(),
-              TextButton.icon(
-                onPressed: onViewStatement,
-                icon: const Icon(Icons.receipt_long),
-                label: const Text('Statement'),
+              child: Icon(
+                option.icon,
+                color: AppColors.iconColor,
+                size: 28.w,
               ),
-            ],
-          ),
-          SizedBox(height: 12.h),
-          Text(
-            'Current Balance',
-            style: AppTextStyles.bodySmall.copyWith(color: Colors.grey[700]),
-          ),
-          SizedBox(height: 6.h),
-          Text(
-            _formatCurrency(balance),
-            style: AppTextStyles.headlineMedium.copyWith(
-              fontWeight: FontWeight.w800,
-              color: AppColors.iconColor,
             ),
-          ),
-          SizedBox(height: 12.h),
-          Row(
-            children: [
-              Expanded(
-                child: _InfoTile(
-                  label: 'Account Number',
-                  value: accountNumber,
-                  trailing: IconButton(
-                    icon: const Icon(Icons.copy, size: 18),
-                    onPressed: () {
-                      Clipboard.setData(ClipboardData(text: accountNumber));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Account number copied')),
-                      );
-                    },
-                  ),
-                ),
+            SizedBox(height: 12.h),
+            Text(
+              option.title,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodySmall.copyWith(
+                fontWeight: FontWeight.w600,
               ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatCurrency(double value) {
-    return 'PKR ${value.toStringAsFixed(2)}';
-  }
-}
-
-class _InfoTile extends StatelessWidget {
-  final String label;
-  final String value;
-  final Widget? trailing;
-
-  const _InfoTile({required this.label, required this.value, this.trailing});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-      decoration: BoxDecoration(
-        color: AppColors.fillColor,
-        borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: Colors.grey[700],
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(value, style: AppTextStyles.bodyMediumBold),
-              ],
             ),
-          ),
-          if (trailing != null) trailing!,
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-///////////////////////////////////////////////////////////////
-void _handleTransferMoney(BuildContext context) {
-  Navigator.of(context).push(
-    MaterialPageRoute(
-      builder: (_) => const PaymentDetailsScreen(title: 'Transfer Money'),
-    ),
-  );
-}
-
-void _handleRequestMoney(BuildContext context) {
-  Navigator.of(context).push(
-    MaterialPageRoute(
-      builder: (_) => const PaymentDetailsScreen(title: 'Request Money'),
-    ),
-  );
-}
+// Grid-only layout; legacy account summary widgets removed

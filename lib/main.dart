@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:park_chatapp/features/chat/presentation/screens/direct_chat_screen.dart';
 import 'firebase_options.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -10,6 +11,9 @@ import 'package:park_chatapp/features/chat/presentation/screens/group_chat_scree
 import 'package:park_chatapp/features/chat/domain/models/group.dart';
 import 'package:park_chatapp/features/property/presentation/screens/AddEditPropertyScreen.dart';
 import 'package:park_chatapp/features/property/presentation/screens/my_listings_screen.dart';
+import 'package:park_chatapp/features/auth/presentation/screens/utility_bills_reference_screen.dart';
+import 'package:park_chatapp/features/auth/presentation/screens/possession_charges_reference_screen.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -23,6 +27,17 @@ void main() async {
   } catch (e) {
     // Firebase might already be initialized, continue
     print('Firebase initialization: $e');
+  }
+
+  // Activate Firebase App Check with debug providers during development
+  try {
+    await FirebaseAppCheck.instance.activate(
+      androidProvider: AndroidProvider.debug,
+      appleProvider: AppleProvider.debug,
+    );
+  } catch (e) {
+    // ignore: avoid_print
+    print('AppCheck activation failed: $e');
   }
 
   FlutterError.onError = (FlutterErrorDetails details) {
@@ -64,6 +79,9 @@ class MyApp extends StatelessWidget {
             '/AddEditPropertyScreen':
                 (context) => const AddEditPropertyScreen(),
             '/my_listings': (context) => const MyListingsScreen(),
+            '/utility_bills': (context) => const UtilityBillReferenceScreen(),
+            '/possession_charges':
+                (context) => const PossessionChargesReferenceScreen(),
           },
           onGenerateRoute: (settings) {
             if (settings.name == '/group_chat') {

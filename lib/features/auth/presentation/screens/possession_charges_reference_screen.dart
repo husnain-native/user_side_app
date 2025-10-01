@@ -3,18 +3,18 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:park_chatapp/constants/app_colors.dart';
 import 'package:park_chatapp/constants/app_text_styles.dart';
 import 'package:park_chatapp/core/widgets/custom_button.dart';
-import 'package:park_chatapp/features/auth/presentation/screens/plot_installments_summary_screen.dart';
+import 'package:park_chatapp/features/auth/presentation/screens/possession_charges_summary_screen.dart';
 
-class PlotInstallmentReferenceScreen extends StatefulWidget {
-  const PlotInstallmentReferenceScreen({super.key});
+class PossessionChargesReferenceScreen extends StatefulWidget {
+  const PossessionChargesReferenceScreen({super.key});
 
   @override
-  State<PlotInstallmentReferenceScreen> createState() =>
-      _PlotInstallmentReferenceScreenState();
+  State<PossessionChargesReferenceScreen> createState() =>
+      _PossessionChargesReferenceScreenState();
 }
 
-class _PlotInstallmentReferenceScreenState
-    extends State<PlotInstallmentReferenceScreen> {
+class _PossessionChargesReferenceScreenState
+    extends State<PossessionChargesReferenceScreen> {
   final TextEditingController _refController = TextEditingController();
 
   @override
@@ -35,7 +35,7 @@ class _PlotInstallmentReferenceScreenState
         elevation: 0.5,
         centerTitle: true,
         title: Text(
-          'Plot Installments',
+          'Possession Charges',
           style: AppTextStyles.bodyLarge.copyWith(
             color: AppColors.iconColor,
             fontWeight: FontWeight.w700,
@@ -66,7 +66,7 @@ class _PlotInstallmentReferenceScreenState
                 decoration: const InputDecoration(
                   counterText: '',
                   border: InputBorder.none,
-                  hintText: '147XXXXXX913',
+                  hintText: 'Possession Ref (13 digits)',
                 ),
                 onChanged: (value) {
                   setState(() {});
@@ -100,7 +100,7 @@ class _PlotInstallmentReferenceScreenState
     Navigator.of(context).push(
       MaterialPageRoute(
         builder:
-            (_) => PlotInstallmentSummaryScreen(
+            (_) => PossessionChargesSummaryScreen(
               reference: _refController.text.trim(),
             ),
       ),
@@ -135,7 +135,10 @@ class _TopInfoCard extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: Icon(Icons.home_work_outlined, color: AppColors.iconColor),
+            child: Icon(
+              Icons.assignment_turned_in_outlined,
+              color: AppColors.iconColor,
+            ),
           ),
           SizedBox(width: 12.w),
           Expanded(
@@ -145,7 +148,7 @@ class _TopInfoCard extends StatelessWidget {
                 Text('HUSNAIN ARIF', style: AppTextStyles.bodyMediumBold),
                 SizedBox(height: 4.h),
                 Text(
-                  'Balance: PKR 125,430.75',
+                  'Plot: 23-A Sector B',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: Colors.grey[700],
                   ),

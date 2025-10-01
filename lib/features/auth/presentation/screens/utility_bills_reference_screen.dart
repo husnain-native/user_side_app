@@ -3,18 +3,26 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:park_chatapp/constants/app_colors.dart';
 import 'package:park_chatapp/constants/app_text_styles.dart';
 import 'package:park_chatapp/core/widgets/custom_button.dart';
-import 'package:park_chatapp/features/auth/presentation/screens/plot_installments_summary_screen.dart';
+import 'package:park_chatapp/features/auth/presentation/screens/utility_bills_summary_screen.dart';
 
-class PlotInstallmentReferenceScreen extends StatefulWidget {
-  const PlotInstallmentReferenceScreen({super.key});
+class UtilityBillReferenceScreen extends StatefulWidget {
+  final String billType;
+  final IconData? icon;
+  final Color? color;
+  const UtilityBillReferenceScreen({
+    super.key,
+    this.billType = 'Utility Bills',
+    this.icon,
+    this.color,
+  });
 
   @override
-  State<PlotInstallmentReferenceScreen> createState() =>
-      _PlotInstallmentReferenceScreenState();
+  State<UtilityBillReferenceScreen> createState() =>
+      _UtilityBillReferenceScreenState();
 }
 
-class _PlotInstallmentReferenceScreenState
-    extends State<PlotInstallmentReferenceScreen> {
+class _UtilityBillReferenceScreenState
+    extends State<UtilityBillReferenceScreen> {
   final TextEditingController _refController = TextEditingController();
 
   @override
@@ -26,7 +34,6 @@ class _PlotInstallmentReferenceScreenState
   @override
   Widget build(BuildContext context) {
     final String ref = _refController.text.trim();
-    final bool valid = RegExp(r'^\d{13}$').hasMatch(ref);
 
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -35,7 +42,7 @@ class _PlotInstallmentReferenceScreenState
         elevation: 0.5,
         centerTitle: true,
         title: Text(
-          'Plot Installments',
+          widget.billType,
           style: AppTextStyles.bodyLarge.copyWith(
             color: AppColors.iconColor,
             fontWeight: FontWeight.w700,
@@ -48,15 +55,21 @@ class _PlotInstallmentReferenceScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _TopInfoCard(),
+            _TopInfoCard(
+              title: widget.billType,
+              icon: widget.icon,
+              color: widget.color,
+            ),
             SizedBox(height: 16.h),
             Text('Enter Reference Number', style: AppTextStyles.bodyMediumBold),
             SizedBox(height: 8.h),
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: const Color(0xFFE5E7EB)),
+                borderRadius: BorderRadius.circular(2.r),
+                border: Border.all(
+                  color: const Color.fromARGB(255, 238, 239, 240),
+                ),
               ),
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 2.h),
               child: TextField(
@@ -66,7 +79,7 @@ class _PlotInstallmentReferenceScreenState
                 decoration: const InputDecoration(
                   counterText: '',
                   border: InputBorder.none,
-                  hintText: '147XXXXXX913',
+                  hintText: 'Utility Ref (13 digits)',
                 ),
                 onChanged: (value) {
                   setState(() {});
@@ -82,7 +95,7 @@ class _PlotInstallmentReferenceScreenState
         ),
       ),
       bottomNavigationBar:
-          valid
+          RegExp(r'^\d{13}$').hasMatch(ref)
               ? SafeArea(
                 minimum: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 16.h),
                 child: CustomButton(
@@ -100,8 +113,9 @@ class _PlotInstallmentReferenceScreenState
     Navigator.of(context).push(
       MaterialPageRoute(
         builder:
-            (_) => PlotInstallmentSummaryScreen(
+            (_) => UtilityBillSummaryScreen(
               reference: _refController.text.trim(),
+              billType: widget.billType,
             ),
       ),
     );
@@ -109,6 +123,10 @@ class _PlotInstallmentReferenceScreenState
 }
 
 class _TopInfoCard extends StatelessWidget {
+  final String? title;
+  final IconData? icon;
+  final Color? color;
+  const _TopInfoCard({this.title, this.icon, this.color});
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -131,21 +149,27 @@ class _TopInfoCard extends StatelessWidget {
             width: 44.w,
             height: 44.w,
             decoration: BoxDecoration(
-              color: AppColors.iconColor.withOpacity(0.1),
+              color: (color ?? AppColors.iconColor).withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: Icon(Icons.home_work_outlined, color: AppColors.iconColor),
+            child: Icon(
+              icon ?? Icons.receipt_long,
+              color: color ?? AppColors.iconColor,
+            ),
           ),
           SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('HUSNAIN ARIF', style: AppTextStyles.bodyMediumBold),
+                Text(
+                  title ?? 'HUSNAIN ARIF',
+                  style: AppTextStyles.bodyMediumBold,
+                ),
                 SizedBox(height: 4.h),
                 Text(
-                  'Balance: PKR 125,430.75',
+                  'Account: 584648495855',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: Colors.grey[700],
                   ),

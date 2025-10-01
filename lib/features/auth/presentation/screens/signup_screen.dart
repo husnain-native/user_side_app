@@ -195,7 +195,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               'New to Park View City?',
                               style: TextStyle(fontSize: 10.sp),
                             ),
-                            const SizedBox(width: 4),
+                             SizedBox(width: 4.sp),
                             GestureDetector(
                               onTap: () {
                                 Navigator.of(context).pushReplacement(
@@ -245,10 +245,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
 Widget _buildCircleIcon(String assetPath) {
   return CircleAvatar(
-    radius: 34, // size of circle
+    radius: 34.r, // size of circle
     backgroundColor: Colors.white, // circle background
     child: ClipOval(
-      child: Image.asset(assetPath, width: 48, height: 48, fit: BoxFit.contain),
+      child: Image.asset(assetPath, width: 48.w, height: 48.h, fit: BoxFit.contain),
     ),
   );
 }

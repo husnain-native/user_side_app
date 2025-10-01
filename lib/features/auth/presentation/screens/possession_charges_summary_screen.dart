@@ -5,58 +5,41 @@ import 'package:park_chatapp/constants/app_text_styles.dart';
 import 'package:park_chatapp/features/auth/presentation/screens/transfer_amount_screen.dart';
 import 'package:park_chatapp/features/auth/presentation/screens/payment_receipt_screen.dart';
 
-class PlotInstallmentSummaryScreen extends StatefulWidget {
+class PossessionChargesSummaryScreen extends StatefulWidget {
   final String reference;
-
-  const PlotInstallmentSummaryScreen({super.key, required this.reference});
+  const PossessionChargesSummaryScreen({super.key, required this.reference});
 
   @override
-  State<PlotInstallmentSummaryScreen> createState() =>
-      _PlotInstallmentSummaryScreenState();
+  State<PossessionChargesSummaryScreen> createState() =>
+      _PossessionChargesSummaryScreenState();
 }
 
-class _PlotInstallmentSummaryScreenState
-    extends State<PlotInstallmentSummaryScreen> {
-  late List<_Installment> history;
-  late _Installment due;
+class _PossessionChargesSummaryScreenState
+    extends State<PossessionChargesSummaryScreen> {
+  late _Charge due;
+  late List<_Charge> history;
 
   @override
   void initState() {
     super.initState();
     history = [
-      _Installment(
-        number: 1,
-        date: '12 Jun 2025',
-        amount: 120000,
-        status: 'Paid',
-      ),
-      _Installment(
-        number: 2,
-        date: '12 Sep 2025',
-        amount: 120000,
+      _Charge(
+        title: 'Possession Booking',
+        date: '10 Aug 2025',
+        amount: 75000,
         status: 'Paid',
       ),
     ];
-    due = _Installment(
-      number: 3,
-      date: '12 Dec 2025',
-      amount: 120000,
+    due = _Charge(
+      title: 'Final Possession Charges',
+      date: '10 Oct 2025',
+      amount: 125000,
       status: 'Due',
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Plan summary (mock). Replace with API values when available
-    final int totalInstallments = 6;
-    final double perInstallmentAmount = 120000;
-    final double totalPayable = totalInstallments * perInstallmentAmount;
-    final double totalPaid = history.fold(0.0, (sum, i) => sum + i.amount);
-    final double remaining = (totalPayable - totalPaid).clamp(
-      0.0,
-      double.infinity,
-    );
-
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -64,7 +47,7 @@ class _PlotInstallmentSummaryScreenState
         elevation: 0.5,
         centerTitle: true,
         title: Text(
-          'Installment Details',
+          'Possession Details',
           style: AppTextStyles.bodyLarge.copyWith(
             color: AppColors.iconColor,
             fontWeight: FontWeight.w700,
@@ -79,39 +62,33 @@ class _PlotInstallmentSummaryScreenState
           children: [
             _ReferenceCard(reference: widget.reference),
             SizedBox(height: 16.h),
-            _TotalsRow(
-              totalPayable: totalPayable,
-              totalPaid: totalPaid,
-              remaining: remaining,
-            ),
-            SizedBox(height: 16.h),
-            _DueCard(inst: due),
+            _DueCard(charge: due),
             SizedBox(height: 12.h),
-            _NextInstallmentActions(
-              nextInst: due,
-              onPaid: (double paidAmount) {
+            _PayAction(
+              charge: due,
+              onPaid: (double amount) {
                 setState(() {
                   history.add(
-                    _Installment(
-                      number: due.number,
+                    _Charge(
+                      title: due.title,
                       date: due.date,
-                      amount: paidAmount,
+                      amount: amount,
                       status: 'Paid',
                     ),
                   );
-                  due = _Installment(
-                    number: due.number + 1,
-                    date: '12 Mar 2026',
-                    amount: due.amount,
+                  due = _Charge(
+                    title: 'Documentation Charges',
+                    date: '10 Nov 2025',
+                    amount: 50000,
                     status: 'Due',
                   );
                 });
                 showPaymentReceiptDialog(
                   context,
-                  title: 'Installment Receipt',
+                  title: 'Possession Payment Receipt',
                   receiptId: DateTime.now().millisecondsSinceEpoch.toString(),
                   dateTime: DateTime.now(),
-                  amount: paidAmount,
+                  amount: amount,
                   fromAccount: '584648495855',
                   fromTitle: 'HUSNAIN ARIF',
                   billingCompany: 'Park View City',
@@ -121,10 +98,10 @@ class _PlotInstallmentSummaryScreenState
               },
             ),
             SizedBox(height: 16.h),
-            Text('Previous Installments', style: AppTextStyles.bodyMediumBold),
+            Text('Previous Charges', style: AppTextStyles.bodyMediumBold),
             SizedBox(height: 8.h),
-            ...history.map((i) => _HistoryTile(inst: i)).toList(),
-            SizedBox(height: 32.h),
+            ...history.map((c) => _HistoryTile(charge: c)).toList(),
+            SizedBox(height: 24.h),
           ],
         ),
       ),
@@ -154,7 +131,7 @@ class _ReferenceCard extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: Icon(Icons.tag, color: AppColors.primaryRed),
+            child: Icon(Icons.badge_outlined, color: AppColors.primaryRed),
           ),
           SizedBox(width: 12.w),
           Expanded(
@@ -179,14 +156,14 @@ class _ReferenceCard extends StatelessWidget {
 }
 
 class _DueCard extends StatelessWidget {
-  final _Installment inst;
-  const _DueCard({required this.inst});
+  final _Charge charge;
+  const _DueCard({required this.charge});
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.orange.shade400, Colors.deepOrange.shade400],
+          colors: [Colors.teal.shade400, Colors.teal.shade700],
         ),
         borderRadius: BorderRadius.circular(12.r),
       ),
@@ -205,7 +182,7 @@ class _DueCard extends StatelessWidget {
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  'PKR ${inst.amount.toStringAsFixed(0)} due on ${inst.date}',
+                  'PKR ${charge.amount.toStringAsFixed(0)} • ${charge.title} • ${charge.date}',
                   style: AppTextStyles.bodyMediumBold.copyWith(
                     color: Colors.white,
                   ),
@@ -219,66 +196,10 @@ class _DueCard extends StatelessWidget {
   }
 }
 
-class _TotalsRow extends StatelessWidget {
-  final double totalPayable;
-  final double totalPaid;
-  final double remaining;
-  const _TotalsRow({
-    required this.totalPayable,
-    required this.totalPaid,
-    required this.remaining,
-  });
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: _MetricCard(label: 'Total Payable', value: totalPayable),
-        ),
-        SizedBox(width: 10.w),
-        Expanded(child: _MetricCard(label: 'Total Paid', value: totalPaid)),
-        SizedBox(width: 10.w),
-        Expanded(child: _MetricCard(label: 'Remaining', value: remaining)),
-      ],
-    );
-  }
-}
-
-class _MetricCard extends StatelessWidget {
-  final String label;
-  final double value;
-  const _MetricCard({required this.label, required this.value});
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(4.r),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: AppTextStyles.bodySmall.copyWith(color: Colors.grey[700]),
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            'PKR ${value.toStringAsFixed(0)}',
-            style: AppTextStyles.bodyMediumBold,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _NextInstallmentActions extends StatelessWidget {
-  final _Installment nextInst;
+class _PayAction extends StatelessWidget {
+  final _Charge charge;
   final ValueChanged<double> onPaid;
-  const _NextInstallmentActions({required this.nextInst, required this.onPaid});
+  const _PayAction({required this.charge, required this.onPaid});
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -294,10 +215,10 @@ class _NextInstallmentActions extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Next Installment', style: AppTextStyles.bodyMediumBold),
+                Text('Charge', style: AppTextStyles.bodyMediumBold),
                 SizedBox(height: 4.h),
                 Text(
-                  'PKR ${nextInst.amount.toStringAsFixed(0)} • Due ${nextInst.date}',
+                  'PKR ${charge.amount.toStringAsFixed(0)}',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: Colors.grey[700],
                   ),
@@ -309,7 +230,7 @@ class _NextInstallmentActions extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               elevation: 0,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadiusGeometry.circular(4.r),
+                borderRadius: BorderRadius.circular(4.r),
                 side: BorderSide(color: AppColors.iconColor, width: 1),
               ),
               backgroundColor: AppColors.white,
@@ -327,9 +248,9 @@ class _NextInstallmentActions extends StatelessWidget {
                         balance: 234796.61,
                         toName: 'Park Vire City',
                         toAccount: '8975219217',
-                        lastSummary: 'Last: PKR 12,000 | 12 Sep 2025',
+                        lastSummary: 'Last: PKR 75,000 | 10 Aug 2025',
                         transferLimit: 3000000,
-                        flow: 'installment',
+                        flow: 'possession',
                       ),
                 ),
               );
@@ -347,8 +268,8 @@ class _NextInstallmentActions extends StatelessWidget {
 }
 
 class _HistoryTile extends StatelessWidget {
-  final _Installment inst;
-  const _HistoryTile({required this.inst});
+  final _Charge charge;
+  const _HistoryTile({required this.charge});
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -379,7 +300,7 @@ class _HistoryTile extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        'Installment ${inst.number}',
+                        charge.title,
                         style: AppTextStyles.bodyMediumBold,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -389,7 +310,7 @@ class _HistoryTile extends StatelessWidget {
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  'Park View City - ${inst.date}',
+                  'Park View City',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: Colors.grey[700],
                   ),
@@ -399,12 +320,12 @@ class _HistoryTile extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        inst.status == 'Paid'
+                        charge.status == 'Paid'
                             ? 'PAID'
-                            : 'Due Rs ${inst.amount.toStringAsFixed(0)} ${inst.date}',
+                            : 'Due Rs ${charge.amount.toStringAsFixed(0)} ${charge.date}',
                         style: AppTextStyles.bodySmall.copyWith(
                           color:
-                              inst.status == 'Paid'
+                              charge.status == 'Paid'
                                   ? const Color(0xFF16A34A)
                                   : const Color(0xFFDC2626),
                           fontWeight: FontWeight.w600,
@@ -412,8 +333,8 @@ class _HistoryTile extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      inst.status == 'Paid'
-                          ? 'Last Paid Rs ${inst.amount.toStringAsFixed(0)} ${inst.date}'
+                      charge.status == 'Paid'
+                          ? 'Last Paid Rs ${charge.amount.toStringAsFixed(0)} ${charge.date}'
                           : 'Last Paid —',
                       style: AppTextStyles.bodySmall.copyWith(
                         color: Colors.grey[600],
@@ -430,13 +351,13 @@ class _HistoryTile extends StatelessWidget {
   }
 }
 
-class _Installment {
-  final int number;
+class _Charge {
+  final String title;
   final String date;
   final double amount;
   final String status;
-  _Installment({
-    required this.number,
+  _Charge({
+    required this.title,
     required this.date,
     required this.amount,
     required this.status,
