@@ -35,6 +35,12 @@ class _UtilityBillReferenceScreenState
   Widget build(BuildContext context) {
     final String ref = _refController.text.trim();
 
+    // Extract company name from billType (format: "Company Name - Bill Type")
+    final String companyName =
+        widget.billType.contains(' - ')
+            ? widget.billType.split(' - ')[0]
+            : widget.billType;
+
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -56,12 +62,12 @@ class _UtilityBillReferenceScreenState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _TopInfoCard(
-              title: widget.billType,
+              title: companyName,
               icon: widget.icon,
               color: widget.color,
             ),
             SizedBox(height: 16.h),
-            Text('Enter Reference Number', style: AppTextStyles.bodyMediumBold),
+            Text(companyName, style: AppTextStyles.bodyMediumBold),
             SizedBox(height: 8.h),
             Container(
               decoration: BoxDecoration(
@@ -76,10 +82,10 @@ class _UtilityBillReferenceScreenState
                 controller: _refController,
                 keyboardType: TextInputType.number,
                 maxLength: 13,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   counterText: '',
                   border: InputBorder.none,
-                  hintText: 'Utility Ref (13 digits)',
+                  hintText: 'Enter Consumer ID',
                 ),
                 onChanged: (value) {
                   setState(() {});

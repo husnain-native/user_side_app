@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:park_chatapp/constants/app_colors.dart';
 import 'package:park_chatapp/constants/app_text_styles.dart';
-import 'package:park_chatapp/features/auth/presentation/screens/transfer_amount_screen.dart';
-import 'package:park_chatapp/features/auth/presentation/screens/payment_receipt_screen.dart';
+import 'package:park_chatapp/features/auth/presentation/screens/payment_method_selection_screen.dart';
 
 class UtilityBillSummaryScreen extends StatefulWidget {
   final String reference;
@@ -87,63 +86,18 @@ class _UtilityBillSummaryScreenState extends State<UtilityBillSummaryScreen> {
               reference: widget.reference,
               billType: widget.billType ?? 'Utility Bill',
               onViewBill: () => _showBillImage(context, widget.billType),
-              onPay: () async {
-                final result = await Navigator.of(
-                  context,
-                ).push<Map<String, dynamic>>(
+              onPay: () {
+                Navigator.of(context).push(
                   MaterialPageRoute(
                     builder:
-                        (_) => TransferAmountScreen(
-                          fromName: 'HUSNAIN ARIF',
-                          fromAccount: '584648495855',
-                          balance: 234796.61,
-                          toName: 'Park View City',
-                          toAccount: '8975219217',
-                          lastSummary: 'Last: PKR 5,400 | 05 Sep 2025',
-                          transferLimit: 3000000,
-                          flow: 'utility',
+                        (_) => PaymentMethodSelectionScreen(
                           billType: widget.billType ?? 'Utility Bill',
-                          billReference: widget.reference,
-                          billDate: due.date,
-                          billAmount: due.amount,
+                          reference: widget.reference,
+                          amount: due.amount,
+                          billingCompany: due.provider,
                         ),
                   ),
                 );
-                final amount = (result ?? const {})['amount'] as double?;
-                if (amount != null && amount > 0) {
-                  setState(() {
-                    history.add(
-                      _Bill(
-                        provider: due.provider,
-                        account: due.account,
-                        date: due.date,
-                        amount: amount,
-                        status: 'Paid',
-                        title: due.title,
-                      ),
-                    );
-                    due = _Bill(
-                      provider: due.provider,
-                      account: due.account,
-                      date: '05 Nov 2025',
-                      amount: due.amount,
-                      status: 'Due',
-                      title: due.title,
-                    );
-                  });
-                  showPaymentReceiptDialog(
-                    context,
-                    title: 'Utility Bill Receipt',
-                    receiptId: DateTime.now().millisecondsSinceEpoch.toString(),
-                    dateTime: DateTime.now(),
-                    amount: amount,
-                    fromAccount: '584648495855',
-                    fromTitle: 'HUSNAIN ARIF',
-                    billingCompany: due.provider,
-                    consumerNumber: widget.reference,
-                    stampAsset: 'assets/images/paid.webp',
-                  );
-                }
               },
             ),
             SizedBox(height: 16.h),

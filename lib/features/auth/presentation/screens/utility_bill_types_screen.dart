@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:park_chatapp/constants/app_colors.dart';
 import 'package:park_chatapp/constants/app_text_styles.dart';
-import 'package:park_chatapp/features/auth/presentation/screens/utility_bills_reference_screen.dart';
+import 'package:park_chatapp/features/auth/presentation/screens/utility_company_selection_screen.dart';
 
 class UtilityBillTypesScreen extends StatelessWidget {
   const UtilityBillTypesScreen({super.key});
@@ -54,7 +54,7 @@ class UtilityBillTypesScreen extends StatelessWidget {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder:
-                        (_) => UtilityBillReferenceScreen(
+                        (_) => UtilityCompanySelectionScreen(
                           billType: t.title,
                           icon: t.icon,
                           color: t.color,
