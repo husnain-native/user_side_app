@@ -10,6 +10,8 @@ class PaymentMethodSelectionScreen extends StatefulWidget {
   final String reference;
   final double amount;
   final String billingCompany;
+  // Optional: override confirm navigation (e.g., Education flow)
+  final void Function(PaymentMethod method)? onConfirmed;
 
   const PaymentMethodSelectionScreen({
     super.key,
@@ -17,6 +19,7 @@ class PaymentMethodSelectionScreen extends StatefulWidget {
     required this.reference,
     required this.amount,
     required this.billingCompany,
+    this.onConfirmed,
   });
 
   @override
@@ -196,6 +199,14 @@ class _PaymentMethodSelectionScreenState
   }
 
   void _confirmPayment() {
+    final method = paymentMethods.firstWhere(
+      (m) => m.id == selectedPaymentMethod,
+      orElse: () => paymentMethods.first,
+    );
+    if (widget.onConfirmed != null) {
+      widget.onConfirmed!(method);
+      return;
+    }
     Navigator.of(context).push(
       MaterialPageRoute(
         builder:
@@ -212,6 +223,8 @@ class _PaymentMethodSelectionScreenState
               billReference: widget.reference,
               billDate: '05 Oct 2025',
               billAmount: widget.amount,
+              paymentMethodName: method.name,
+              paymentMethodLogoAsset: method.icon,
             ),
       ),
     );

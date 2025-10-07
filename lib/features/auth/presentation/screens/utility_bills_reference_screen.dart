@@ -9,11 +9,13 @@ class UtilityBillReferenceScreen extends StatefulWidget {
   final String billType;
   final IconData? icon;
   final Color? color;
+  final String? logoPath;
   const UtilityBillReferenceScreen({
     super.key,
     this.billType = 'Utility Bills',
     this.icon,
     this.color,
+    this.logoPath,
   });
 
   @override
@@ -65,6 +67,7 @@ class _UtilityBillReferenceScreenState
               title: companyName,
               icon: widget.icon,
               color: widget.color,
+              logoPath: widget.logoPath,
             ),
             SizedBox(height: 16.h),
             Text(companyName, style: AppTextStyles.bodyMediumBold),
@@ -132,7 +135,8 @@ class _TopInfoCard extends StatelessWidget {
   final String? title;
   final IconData? icon;
   final Color? color;
-  const _TopInfoCard({this.title, this.icon, this.color});
+  final String? logoPath;
+  const _TopInfoCard({this.title, this.icon, this.color, this.logoPath});
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -159,10 +163,26 @@ class _TopInfoCard extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: Icon(
-              icon ?? Icons.receipt_long,
-              color: color ?? AppColors.iconColor,
-            ),
+            child:
+                (logoPath != null && (logoPath ?? '').isNotEmpty)
+                    ? ClipOval(
+                      child: Image.asset(
+                        logoPath!,
+                        width: 44.w,
+                        height: 44.w,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(
+                            icon ?? Icons.receipt_long,
+                            color: color ?? AppColors.iconColor,
+                          );
+                        },
+                      ),
+                    )
+                    : Icon(
+                      icon ?? Icons.receipt_long,
+                      color: color ?? AppColors.iconColor,
+                    ),
           ),
           SizedBox(width: 12.w),
           Expanded(

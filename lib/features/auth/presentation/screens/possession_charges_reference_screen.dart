@@ -3,7 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:park_chatapp/constants/app_colors.dart';
 import 'package:park_chatapp/constants/app_text_styles.dart';
 import 'package:park_chatapp/core/widgets/custom_button.dart';
-import 'package:park_chatapp/features/auth/presentation/screens/possession_charges_summary_screen.dart';
+import 'package:park_chatapp/features/auth/presentation/screens/payment_method_selection_screen.dart';
+import 'package:park_chatapp/features/auth/presentation/screens/possession_payment_summary_screen.dart';
 
 class PossessionChargesReferenceScreen extends StatefulWidget {
   const PossessionChargesReferenceScreen({super.key});
@@ -97,11 +98,30 @@ class _PossessionChargesReferenceScreenState
 
   void _proceed() {
     FocusScope.of(context).unfocus();
+    final ref = _refController.text.trim();
+    // Go to payment method first; then summary like Education
     Navigator.of(context).push(
       MaterialPageRoute(
         builder:
-            (_) => PossessionChargesSummaryScreen(
-              reference: _refController.text.trim(),
+            (_) => PaymentMethodSelectionScreen(
+              billType: 'Possession Charges',
+              reference: ref,
+              amount: 0,
+              billingCompany: 'Park View City',
+              onConfirmed: (method) {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder:
+                        (_) => PossessionPaymentSummaryScreen(
+                          reference: ref,
+                          amount:
+                              125000, // example; replace with API when available
+                          paymentMethodName: method.name,
+                          paymentMethodLogo: method.icon,
+                        ),
+                  ),
+                );
+              },
             ),
       ),
     );

@@ -4,8 +4,10 @@ import 'package:park_chatapp/constants/app_colors.dart';
 import 'package:park_chatapp/constants/app_text_styles.dart';
 // Removed legacy widgets/imports after grid redesign
 import 'package:park_chatapp/features/auth/presentation/screens/statement_screen.dart';
-import 'package:park_chatapp/features/auth/presentation/screens/plot_installments_reference_screen.dart';
 import 'package:park_chatapp/features/auth/presentation/screens/utility_bill_types_screen.dart';
+import 'package:park_chatapp/features/auth/presentation/screens/education_institution_selection_screen.dart';
+import 'package:park_chatapp/features/auth/presentation/screens/corporate_reference_screen.dart';
+import 'package:park_chatapp/features/auth/presentation/screens/possession_charges_reference_screen.dart';
 // import 'package:park_chatapp/features/auth/presentation/screens/possession_charges_reference_screen.dart';
 import 'package:flutter/services.dart';
 // import 'package:park_chatapp/features/payments/presentation/widgets/account_card.dart';
@@ -25,17 +27,17 @@ class PaymentsScreen extends StatelessWidget {
       _GridOption(
         title: 'Education',
         icon: Icons.menu_book_outlined,
-        onTap: () {},
+        onTap: () => _handleEducation(context),
       ),
       _GridOption(
         title: 'Possession Charges',
         icon: Icons.receipt_long_outlined,
-        onTap: () {},
+        onTap: () => _handlePossession(context),
       ),
       _GridOption(
         title: 'Corporate',
         icon: Icons.home_work_rounded,
-        onTap: () {},
+        onTap: () => _handleCorporate(context),
       ),
       // _GridOption(
       //   title: 'Possession Charges',
@@ -176,10 +178,32 @@ class PaymentsScreen extends StatelessWidget {
     ).push(MaterialPageRoute(builder: (_) => const UtilityBillTypesScreen()));
   }
 
-  void _handlePlotInstallments(BuildContext context) {
+  // void _handlePlotInstallments(BuildContext context) {
+  //   Navigator.of(context).push(
+  //     MaterialPageRoute(builder: (_) => const PlotInstallmentReferenceScreen()),
+  //   );
+  // }
+
+  void _handleEducation(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const PlotInstallmentReferenceScreen()),
+      MaterialPageRoute(
+        builder: (_) => const EducationInstitutionSelectionScreen(),
+      ),
     );
+  }
+
+  void _handlePossession(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const PossessionChargesReferenceScreen(),
+      ),
+    );
+  }
+
+  void _handleCorporate(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const CorporateReferenceScreen()));
   }
 
   // Placeholder for future option
@@ -226,11 +250,7 @@ class _GridTile extends StatelessWidget {
                 color: AppColors.iconColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12.r),
               ),
-              child: Icon(
-                option.icon,
-                color: AppColors.iconColor,
-                size: 28.w,
-              ),
+              child: Icon(option.icon, color: AppColors.iconColor, size: 28.w),
             ),
             SizedBox(height: 12.h),
             Text(

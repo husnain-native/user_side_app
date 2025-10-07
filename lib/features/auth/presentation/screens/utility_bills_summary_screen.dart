@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:park_chatapp/constants/app_colors.dart';
 import 'package:park_chatapp/constants/app_text_styles.dart';
 import 'package:park_chatapp/features/auth/presentation/screens/payment_method_selection_screen.dart';
+import 'package:park_chatapp/features/auth/presentation/screens/transfer_amount_screen.dart';
 
 class UtilityBillSummaryScreen extends StatefulWidget {
   final String reference;
@@ -95,6 +96,30 @@ class _UtilityBillSummaryScreenState extends State<UtilityBillSummaryScreen> {
                           reference: widget.reference,
                           amount: due.amount,
                           billingCompany: due.provider,
+                          onConfirmed: (method) {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder:
+                                    (_) => TransferAmountScreen(
+                                      fromName: 'HUSNAIN ARIF',
+                                      fromAccount: '584648495855',
+                                      balance: 234796.61,
+                                      toName: due.provider,
+                                      toAccount: due.account,
+                                      lastSummary: '—',
+                                      transferLimit: 3000000,
+                                      flow: 'utility',
+                                      billType:
+                                          widget.billType ?? 'Utility Bill',
+                                      billReference: widget.reference,
+                                      billDate: due.date,
+                                      billAmount: due.amount,
+                                      paymentMethodName: method.name,
+                                      paymentMethodLogoAsset: method.icon,
+                                    ),
+                              ),
+                            );
+                          },
                         ),
                   ),
                 );

@@ -79,6 +79,7 @@ class UtilityCompanySelectionScreen extends StatelessWidget {
                                 billType: '${company.name} - $billType',
                                 icon: icon,
                                 color: color,
+                                logoPath: company.logoPath,
                               ),
                         ),
                       );
@@ -98,7 +99,7 @@ class UtilityCompanySelectionScreen extends StatelessWidget {
       case 'Electricity Bill':
         return [
           Company('Park View City', 'assets/images/logo1.jpg'),
-          Company('SSGC', 'assets/images/ssgc.png'),
+          // Company('SSGC', 'assets/images/ssgc.png'),
           Company('KE', 'assets/images/KE.png'),
           Company('LESCO', 'assets/images/lesco.png'),
           Company('GEPCO', 'assets/images/gepco.jpg'),
@@ -127,8 +128,9 @@ class UtilityCompanySelectionScreen extends StatelessWidget {
       case 'Gas Bill':
         return [
           Company('Park View City', 'assets/images/logo1.jpg'),
-          Company('SNGPL', 'assets/images/sngpl.png'), 
-          Company('SSGC', 'assets/images/ssgc.png')];
+          Company('SNGPL', 'assets/images/sngpl.png'),
+          Company('SSGC', 'assets/images/ssgc.png'),
+        ];
       case 'Security Fee':
         return [
           Company('Park View City', 'assets/images/logo1.jpg'),

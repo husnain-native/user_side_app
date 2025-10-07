@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:park_chatapp/constants/app_colors.dart';
 import 'package:park_chatapp/constants/app_text_styles.dart';
 import 'package:park_chatapp/core/widgets/custom_button.dart';
+import 'package:park_chatapp/features/auth/presentation/screens/payment_receipt_screen.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class TransferAmountScreen extends StatefulWidget {
   final String fromName;
@@ -19,6 +21,10 @@ class TransferAmountScreen extends StatefulWidget {
   final String? billReference;
   final String? billDate;
   final double? billAmount;
+  // Selected payment method data (e.g., Mastercard)
+  final String? paymentMethodName;
+  final String?
+  paymentMethodLogoAsset; // path to asset like assets/images/mastercard.png
 
   const TransferAmountScreen({
     super.key,
@@ -34,6 +40,8 @@ class TransferAmountScreen extends StatefulWidget {
     this.billReference,
     this.billDate,
     this.billAmount,
+    this.paymentMethodName,
+    this.paymentMethodLogoAsset,
   });
 
   @override
@@ -126,6 +134,16 @@ class _TransferAmountScreenState extends State<TransferAmountScreen> {
               account: widget.toAccount,
               lastSummary: widget.lastSummary,
             ),
+            if (widget.paymentMethodName != null) ...[
+              SizedBox(height: 12.h),
+              _PaymentMethodAmountCard(
+                name: widget.paymentMethodName!,
+                logoAsset: widget.paymentMethodLogoAsset,
+                amount:
+                    widget.billAmount ??
+                    (double.tryParse(_amountController.text.trim()) ?? 0),
+              ),
+            ],
             if (widget.billAmount != null) ...[
               SizedBox(height: 12.h),
               _BillInfoCard(
@@ -136,33 +154,20 @@ class _TransferAmountScreenState extends State<TransferAmountScreen> {
               ),
             ],
             SizedBox(height: 16.h),
-            Text(
-              'Enter Amount',
-              style: AppTextStyles.bodyMediumBold.copyWith(
-                color: Colors.grey[800],
+            if (widget.paymentMethodName == null) ...[
+              Text(
+                'Amount',
+                style: AppTextStyles.bodyMediumBold.copyWith(
+                  color: Colors.grey[800],
+                ),
               ),
-            ),
-            SizedBox(height: 4.h),
-            _AmountField(controller: _amountController),
-            SizedBox(height: 6.h),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Acc Bal: PKR ${widget.balance.toStringAsFixed(2)}',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: const Color(0xFF16A34A),
-                    ),
-                  ),
-                ),
-                Text(
-                  'Transfer Limit:PKR ${_format(widget.transferLimit)}',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: Colors.grey[800],
-                  ),
-                ),
-              ],
-            ),
+              SizedBox(height: 4.h),
+              _AmountField(
+                controller: _amountController,
+                readOnly: widget.billAmount != null,
+              ),
+              SizedBox(height: 6.h),
+            ],
             if (widget.billAmount == null) ...[
               SizedBox(height: 14.h),
               Text(
@@ -191,6 +196,45 @@ class _TransferAmountScreenState extends State<TransferAmountScreen> {
           onPressed: () {
             final amount = double.tryParse(_amountController.text.trim()) ?? 0;
             if (amount <= 0) return;
+            if (widget.billAmount != null && widget.paymentMethodName != null) {
+              // Show a loader for 2 seconds, then show receipt
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder:
+                    (_) => Center(
+                      child: SizedBox(
+                        width: 80.w,
+                        height: 60.w,
+                        child: const SpinKitWave(
+                          color: AppColors.iconColor,
+                          size: 40,
+                        ),
+                      ),
+                    ),
+              );
+              Future.delayed(const Duration(seconds: 2), () async {
+                if (!mounted) return;
+                // Ensure the progress dialog is dismissed from the root navigator
+                final rootNav = Navigator.of(context, rootNavigator: true);
+                if (rootNav.canPop()) {
+                  rootNav.pop();
+                }
+                await showPaymentReceiptDialog(
+                  context,
+                  title: widget.billType ?? 'Utility Bill',
+                  receiptId: 'RCPT-${DateTime.now().millisecondsSinceEpoch}',
+                  dateTime: DateTime.now(),
+                  amount: amount,
+                  fromAccount: widget.fromAccount,
+                  fromTitle: widget.fromName,
+                  billingCompany: widget.toName,
+                  consumerNumber: widget.billReference ?? '-',
+                );
+              });
+              return;
+            }
+            // Default: bubble result back
             Navigator.of(context).pop({
               'amount': amount,
               'purpose':
@@ -206,9 +250,7 @@ class _TransferAmountScreenState extends State<TransferAmountScreen> {
     );
   }
 
-  String _format(double v) {
-    return v.toStringAsFixed(0);
-  }
+  // removed: _format (no longer used)
 }
 
 class _FromAccountCard extends StatelessWidget {
@@ -409,7 +451,8 @@ class _BillInfoCard extends StatelessWidget {
 
 class _AmountField extends StatelessWidget {
   final TextEditingController controller;
-  const _AmountField({required this.controller});
+  final bool readOnly;
+  const _AmountField({required this.controller, this.readOnly = false});
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -436,7 +479,55 @@ class _AmountField extends StatelessWidget {
                 hintText: '',
                 border: InputBorder.none,
               ),
+              readOnly: readOnly,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// removed: _PaymentMethodCard (replaced by _PaymentMethodAmountCard)
+
+class _PaymentMethodAmountCard extends StatelessWidget {
+  final String name;
+  final String? logoAsset;
+  final double amount;
+  const _PaymentMethodAmountCard({
+    required this.name,
+    this.logoAsset,
+    required this.amount,
+  });
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      padding: EdgeInsets.all(16.w),
+      child: Row(
+        children: [
+          Container(
+            width: 44.w,
+            height: 28.w,
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              // borderRadius: BorderRadius.circular(6.r),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child:
+                (logoAsset != null && (logoAsset ?? '').isNotEmpty)
+                    ? Image.asset(logoAsset!, fit: BoxFit.contain)
+                    : const Icon(Icons.credit_card, color: Colors.grey),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(child: Text(name, style: AppTextStyles.bodyMediumBold)),
+          Text(
+            'PKR ${amount.toStringAsFixed(0)}',
+            style: AppTextStyles.bodyMediumBold,
           ),
         ],
       ),
