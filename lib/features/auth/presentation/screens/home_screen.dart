@@ -14,6 +14,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as ll;
 import 'package:park_chatapp/features/auth/presentation/widgets/payments_banner.dart';
 import 'package:park_chatapp/features/auth/presentation/widgets/marketplace_horizontal_list.dart';
+import 'package:park_chatapp/features/auth/presentation/widgets/complaint_home_preview.dart';
 
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
@@ -38,6 +39,8 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           children: [
             const PaymentsBanner(),
+            SizedBox(height: 16.h),
+            const ComplaintHomePreview(),
             // SizedBox(height: 16.h),
             // Image.asset(
             //   'assets/images/parkview.png',

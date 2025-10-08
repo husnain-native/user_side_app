@@ -52,7 +52,13 @@ class _BottomNavScaffoldState extends State<BottomNavScaffold> {
         ),
         bottomNavigationBar: _BottomBar(
           currentIndex: _currentIndex,
-          onTap: (index) => setState(() => _currentIndex = index),
+          onTap: (index) {
+            if (index == 0) {
+              _goHome();
+              return;
+            }
+            setState(() => _currentIndex = index);
+          },
         ),
       ),
     );
@@ -65,6 +71,14 @@ class _BottomNavScaffoldState extends State<BottomNavScaffold> {
         return MaterialPageRoute(builder: (_) => child);
       },
     );
+  }
+
+  void _goHome() {
+    setState(() => _currentIndex = 0);
+    final NavigatorState homeNav = _navigatorKeys[0].currentState!;
+    while (homeNav.canPop()) {
+      homeNav.pop();
+    }
   }
 }
 

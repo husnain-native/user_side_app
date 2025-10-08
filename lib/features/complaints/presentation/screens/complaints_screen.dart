@@ -337,9 +337,7 @@ class _ComplaintsScreenState extends State<ComplaintsScreen> {
   Widget _buildComplaintsTab(BuildContext context) {
     final filtered = _applyComplaintFilters(_complaints);
     if (_isLoadingComplaints) {
-      return Center(
-        child: SpinKitWave(color: AppColors.primaryRed, size: 42.w),
-      );
+      return Center(child: SpinKitWave(color: AppColors.iconColor, size: 42.w));
     }
     return ListView(
       padding: EdgeInsets.all(16.w),
@@ -607,12 +605,12 @@ class _ComplaintsScreenState extends State<ComplaintsScreen> {
                                               : Colors.grey[700],
                                     ),
                                     onSelected:
-                                        (_) => setModalState(() => tmpSort = s),
+                                        (_) => setModalState(() => tmpSort = s), 
                                   ),
                                 )
                                 .toList(),
                       ),
-                      SizedBox(height: 16.h),
+                      SizedBox(height: 16.h),      
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
