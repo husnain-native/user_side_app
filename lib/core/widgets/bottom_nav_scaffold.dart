@@ -4,6 +4,7 @@ import 'package:park_chatapp/constants/app_colors.dart';
 import 'package:park_chatapp/features/auth/presentation/screens/home_screen.dart';
 import 'package:park_chatapp/features/marketplace/presentation/screens/unified_marketplace_screen.dart';
 import 'package:park_chatapp/features/marketplace/presentation/screens/favorites_screen.dart';
+import 'package:park_chatapp/features/settings/presentation/screens/settings_screen.dart';
 
 /// A persistent bottom navigation scaffold with nested navigators per tab.
 ///
@@ -47,7 +48,7 @@ class _BottomNavScaffoldState extends State<BottomNavScaffold> {
             _buildTabNavigator(1, const UnifiedMarketplaceScreen()),
             _buildTabNavigator(2, const FavoritesScreen()),
             _buildTabNavigator(3, const _BrandsScreen()),
-            _buildTabNavigator(4, const _SettingsScreen()),
+            _buildTabNavigator(4, const SettingsScreen()),
           ],
         ),
         bottomNavigationBar: _BottomBar(
@@ -185,17 +186,7 @@ class _BadgeIcon extends StatelessWidget {
   }
 }
 
-class _SettingsScreen extends StatelessWidget {
-  const _SettingsScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
-      body: const Center(child: Text('Settings coming soon')),
-    );
-  }
-}
+// Removed placeholder settings screen in favor of real SettingsScreen
 
 class _BrandsScreen extends StatelessWidget {
   const _BrandsScreen();

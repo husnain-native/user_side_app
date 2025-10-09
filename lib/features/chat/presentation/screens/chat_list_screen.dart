@@ -17,7 +17,8 @@ class ChatListScreen extends StatefulWidget {
   State<ChatListScreen> createState() => _ChatListScreenState();
 }
 
-class _ChatListScreenState extends State<ChatListScreen> with TickerProviderStateMixin {
+class _ChatListScreenState extends State<ChatListScreen>
+    with TickerProviderStateMixin {
   String? _uid = FirebaseAuth.instance.currentUser?.uid;
   late TabController _tabController;
   String? _adminThreadId;
@@ -64,44 +65,47 @@ class _ChatListScreenState extends State<ChatListScreen> with TickerProviderStat
           'Chats',
           style: AppTextStyles.bodyLarge.copyWith(color: Colors.white),
         ),
-
       ),
-      body: _uid == null
-          ? const Center(child: Text('Please sign in'))
-          : Column(
-              children: [
-                // Custom Tab Bar with horizontal scroll
-                Container(
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _buildTab('All', 0),
-                      const SizedBox(width: 8),
-                      _buildTab('Chats', 1),
-                      const SizedBox(width: 8),
-                      _buildTab('Unread', 2),
-                      const SizedBox(width: 8),
-                      _buildTab('Groups', 3),
-                    ],
+      body:
+          _uid == null
+              ? const Center(child: Text('Please sign in'))
+              : Column(
+                children: [
+                  // Custom Tab Bar with horizontal scroll
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8,
+                      horizontal: 12,
+                    ),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _buildTab('All', 0),
+                          const SizedBox(width: 8),
+                          _buildTab('Chats', 1),
+                          const SizedBox(width: 8),
+                          _buildTab('Unread', 2),
+                          const SizedBox(width: 8),
+                          _buildTab('Groups', 3),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-                ),
-                // Tab Content
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildAllTab(),
-                      _buildChatsTab(),
-                      _buildUnreadTab(),
-                      _buildGroupsTab(),
-                    ],
+                  // Tab Content
+                  Expanded(
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildAllTab(),
+                        _buildChatsTab(),
+                        _buildUnreadTab(),
+                        _buildGroupsTab(),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
     );
   }
 
@@ -116,7 +120,9 @@ class _ChatListScreenState extends State<ChatListScreen> with TickerProviderStat
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 26),
         decoration: BoxDecoration(
           color: isActive ? AppColors.primaryRedOpacity : Colors.white,
-          border: Border.all(color: isActive ? AppColors.primaryRed : Colors.grey),
+          border: Border.all(
+            color: isActive ? AppColors.primaryRed : Colors.grey,
+          ),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
@@ -131,16 +137,21 @@ class _ChatListScreenState extends State<ChatListScreen> with TickerProviderStat
     );
   }
 
-Widget _buildAllTab() {
+  Widget _buildAllTab() {
     return StreamBuilder<DatabaseEvent>(
-      stream: FirebaseDatabase.instance.ref("threads").onValue.asBroadcastStream(),
+      stream:
+          FirebaseDatabase.instance.ref("threads").onValue.asBroadcastStream(),
       builder: (context, threadsSnapshot) {
         if (threadsSnapshot.hasError) {
           return Center(child: Text('Error: ${threadsSnapshot.error}'));
         }
 
-  return StreamBuilder<DatabaseEvent>(
-          stream: FirebaseDatabase.instance.ref("groups").onValue.asBroadcastStream(),
+        return StreamBuilder<DatabaseEvent>(
+          stream:
+              FirebaseDatabase.instance
+                  .ref("groups")
+                  .onValue
+                  .asBroadcastStream(),
           builder: (context, groupsSnapshot) {
             if (groupsSnapshot.hasError) {
               return Center(child: Text('Error: ${groupsSnapshot.error}'));
@@ -149,61 +160,69 @@ Widget _buildAllTab() {
             final allChats = <Map<String, dynamic>>[];
 
             // Add threads (DMs and admin chat)
-            if (threadsSnapshot.hasData && threadsSnapshot.data!.snapshot.value != null) {
-              final threadsData = threadsSnapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+            if (threadsSnapshot.hasData &&
+                threadsSnapshot.data!.snapshot.value != null) {
+              final threadsData =
+                  threadsSnapshot.data!.snapshot.value as Map<dynamic, dynamic>;
               threadsData.forEach((key, value) {
-        if (value is Map<dynamic, dynamic>) {
+                if (value is Map<dynamic, dynamic>) {
                   final chat = Map<String, dynamic>.from(value);
                   final participants = chat["participants"];
-          List<String> participantList = [];
-                  
-          if (participants is Map<dynamic, dynamic>) {
-            participantList = participants.keys.map((e) => e.toString()).toList();
-          } else if (participants is List) {
-            participantList = participants.map((e) => e.toString()).toList();
-          }
-                  
-          if (participantList.contains(_uid)) {
+                  List<String> participantList = [];
+
+                  if (participants is Map<dynamic, dynamic>) {
+                    participantList =
+                        participants.keys.map((e) => e.toString()).toList();
+                  } else if (participants is List) {
+                    participantList =
+                        participants.map((e) => e.toString()).toList();
+                  }
+
+                  if (participantList.contains(_uid)) {
                     final isGroup = (chat["isGroup"] as bool?) ?? false;
-                    final bool adminFlag = (chat["isAdminThread"] as bool?) == true || chat.containsKey('adminName');
+                    final bool adminFlag =
+                        (chat["isAdminThread"] as bool?) == true ||
+                        chat.containsKey('adminName');
                     final isAdminChat = adminFlag && !isGroup;
-                    
+
                     if (isAdminChat) {
                       // Admin chat should be first
                       allChats.insert(0, {"id": key, ...chat, "isAdmin": true});
                     } else {
                       allChats.add({"id": key, ...chat, "isAdmin": false});
                     }
-          }
-        }
-      });
+                  }
+                }
+              });
             }
 
             // Add groups
-            if (groupsSnapshot.hasData && groupsSnapshot.data!.snapshot.value != null) {
-              final groupsData = groupsSnapshot.data!.snapshot.value as Map<dynamic, dynamic>;
-          groupsData.forEach((key, value) {
-            if (value is Map<dynamic, dynamic>) {
-              final group = Map<String, dynamic>.from(value);
-              final members = group["members"];
-              List<String> memberList = [];
-                  
-              if (members is Map<dynamic, dynamic>) {
-                memberList = members.keys.map((e) => e.toString()).toList();
-              } else if (members is List) {
-                memberList = members.map((e) => e.toString()).toList();
-              }
-                  
-              if (memberList.contains(_uid)) {
+            if (groupsSnapshot.hasData &&
+                groupsSnapshot.data!.snapshot.value != null) {
+              final groupsData =
+                  groupsSnapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+              groupsData.forEach((key, value) {
+                if (value is Map<dynamic, dynamic>) {
+                  final group = Map<String, dynamic>.from(value);
+                  final members = group["members"];
+                  List<String> memberList = [];
+
+                  if (members is Map<dynamic, dynamic>) {
+                    memberList = members.keys.map((e) => e.toString()).toList();
+                  } else if (members is List) {
+                    memberList = members.map((e) => e.toString()).toList();
+                  }
+
+                  if (memberList.contains(_uid)) {
                     allChats.add({"id": key, ...group, "isGroup": true});
-              }
-            }
-          });
+                  }
+                }
+              });
             }
 
             if (allChats.isEmpty) {
-            return _buildEmptyListView();
-          }
+              return _buildEmptyListView();
+            }
 
             return ListView.builder(
               itemCount: allChats.length,
@@ -211,20 +230,20 @@ Widget _buildAllTab() {
                 final chat = allChats[index];
                 final isAdmin = chat["isAdmin"] as bool? ?? false;
                 final isGroup = chat["isGroup"] as bool? ?? false;
-                
+
                 if (isAdmin) {
                   return _AdminChatTile(
                     lastMessage: chat["lastMessage"] ?? "No messages yet",
                     lastMessageTime: _parseTimestamp(chat["lastMessageAt"]),
                     unreadCount: _getUnreadCount(chat["unreadCounts"]),
-                onTap: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const AdminChatScreen(),
-                    ),
-                  );
-                },
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const AdminChatScreen(),
+                        ),
+                      );
+                    },
                   );
                 } else if (isGroup) {
                   return _buildGroupTile(chat);
@@ -232,46 +251,50 @@ Widget _buildAllTab() {
                   return _buildDmTile(chat);
                 }
               },
-          );
-        },
-      );
-    },
-  );
-}
+            );
+          },
+        );
+      },
+    );
+  }
 
-Widget _buildChatsTab() {
-  return StreamBuilder<DatabaseEvent>(
-      stream: FirebaseDatabase.instance.ref("threads").onValue.asBroadcastStream(),
-    builder: (context, snapshot) {
+  Widget _buildChatsTab() {
+    return StreamBuilder<DatabaseEvent>(
+      stream:
+          FirebaseDatabase.instance.ref("threads").onValue.asBroadcastStream(),
+      builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
-      }
+        }
 
-      if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
-        return _buildEmptyListView();
-      }
+        if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+          return _buildEmptyListView();
+        }
 
         final data = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
         final dmChats = <Map<String, dynamic>>[];
 
-      data.forEach((key, value) {
-        if (value is Map<dynamic, dynamic>) {
+        data.forEach((key, value) {
+          if (value is Map<dynamic, dynamic>) {
             final chat = Map<String, dynamic>.from(value);
             final isGroup = (chat["isGroup"] as bool?) ?? false;
             if (isGroup) return; // Skip groups in chats tab
 
             final participants = chat["participants"];
-          List<String> participantList = [];
-            
-          if (participants is Map<dynamic, dynamic>) {
-            participantList = participants.keys.map((e) => e.toString()).toList();
-          } else if (participants is List) {
-            participantList = participants.map((e) => e.toString()).toList();
-          }
-            
-          if (participantList.contains(_uid)) {
-              final isAdminChat = (chat["isAdminThread"] as bool?) == true || chat.containsKey('adminName');
-              
+            List<String> participantList = [];
+
+            if (participants is Map<dynamic, dynamic>) {
+              participantList =
+                  participants.keys.map((e) => e.toString()).toList();
+            } else if (participants is List) {
+              participantList = participants.map((e) => e.toString()).toList();
+            }
+
+            if (participantList.contains(_uid)) {
+              final isAdminChat =
+                  (chat["isAdminThread"] as bool?) == true ||
+                  chat.containsKey('adminName');
+
               if (isAdminChat) {
                 // Admin chat should be first
                 dmChats.insert(0, {"id": key, ...chat, "isAdmin": true});
@@ -283,41 +306,40 @@ Widget _buildChatsTab() {
         });
 
         if (dmChats.isEmpty) {
-        return _buildEmptyListView();
-      }
+          return _buildEmptyListView();
+        }
 
         return ListView.builder(
           itemCount: dmChats.length,
           itemBuilder: (context, index) {
             final chat = dmChats[index];
             final isAdmin = chat["isAdmin"] as bool? ?? false;
-            
+
             if (isAdmin) {
               return _AdminChatTile(
                 lastMessage: chat["lastMessage"] ?? "No messages yet",
                 lastMessageTime: _parseTimestamp(chat["lastMessageAt"]),
                 unreadCount: _getUnreadCount(chat["unreadCounts"]),
-            onTap: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const AdminChatScreen(),
-                ),
-              );
-            },
+                onTap: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AdminChatScreen()),
+                  );
+                },
               );
             } else {
               return _buildDmTile(chat);
             }
           },
-      );
-    },
-  );
-}
+        );
+      },
+    );
+  }
 
-Widget _buildUnreadTab() {
-  return StreamBuilder<DatabaseEvent>(
-      stream: FirebaseDatabase.instance.ref("threads").onValue.asBroadcastStream(),
+  Widget _buildUnreadTab() {
+    return StreamBuilder<DatabaseEvent>(
+      stream:
+          FirebaseDatabase.instance.ref("threads").onValue.asBroadcastStream(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
@@ -335,19 +357,24 @@ Widget _buildUnreadTab() {
             final chat = Map<String, dynamic>.from(value);
             final participants = chat["participants"];
             List<String> participantList = [];
-            
+
             if (participants is Map<dynamic, dynamic>) {
-              participantList = participants.keys.map((e) => e.toString()).toList();
+              participantList =
+                  participants.keys.map((e) => e.toString()).toList();
             } else if (participants is List) {
               participantList = participants.map((e) => e.toString()).toList();
             }
-            
+
             if (participantList.contains(_uid)) {
-              final unreadCounts = chat["unreadCounts"] as Map<dynamic, dynamic>? ?? {};
-              final userUnreadCount = int.tryParse('${unreadCounts[_uid] ?? 0}') ?? 0;
-              
+              final unreadCounts =
+                  chat["unreadCounts"] as Map<dynamic, dynamic>? ?? {};
+              final userUnreadCount =
+                  int.tryParse('${unreadCounts[_uid] ?? 0}') ?? 0;
+
               if (userUnreadCount > 0) {
-                final isAdmin = (chat["isAdminThread"] as bool?) == true || chat.containsKey('adminName');
+                final isAdmin =
+                    (chat["isAdminThread"] as bool?) == true ||
+                    chat.containsKey('adminName');
                 if (isAdmin) {
                   unreadChats.insert(0, {"id": key, ...chat, "isAdmin": true});
                 } else {
@@ -362,7 +389,7 @@ Widget _buildUnreadTab() {
           return const Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+              children: [
                 Icon(Icons.mark_email_read, size: 64, color: Colors.grey),
                 SizedBox(height: 16),
                 Text(
@@ -383,7 +410,7 @@ Widget _buildUnreadTab() {
           itemBuilder: (context, index) {
             final chat = unreadChats[index];
             final isAdmin = chat["isAdmin"] as bool? ?? false;
-            
+
             if (isAdmin) {
               return _AdminChatTile(
                 lastMessage: chat["lastMessage"] ?? "No messages yet",
@@ -392,9 +419,7 @@ Widget _buildUnreadTab() {
                 onTap: () async {
                   await Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => const AdminChatScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const AdminChatScreen()),
                   );
                 },
               );
@@ -403,46 +428,47 @@ Widget _buildUnreadTab() {
             } else {
               return _buildDmTile(chat);
             }
-        },
-      );
-    },
-  );
-}
+          },
+        );
+      },
+    );
+  }
 
-Widget _buildGroupsTab() {
-  return StreamBuilder<DatabaseEvent>(
-      stream: FirebaseDatabase.instance.ref("groups").onValue.asBroadcastStream(),
-    builder: (context, snapshot) {
+  Widget _buildGroupsTab() {
+    return StreamBuilder<DatabaseEvent>(
+      stream:
+          FirebaseDatabase.instance.ref("groups").onValue.asBroadcastStream(),
+      builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
-      }
+        }
 
-      if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
-        return _buildEmptyListView();
-      }
+        if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+          return _buildEmptyListView();
+        }
 
         final data = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
-      final groups = <Map<String, dynamic>>[];
+        final groups = <Map<String, dynamic>>[];
 
-      data.forEach((key, value) {
-        if (value is Map<dynamic, dynamic>) {
-          final group = Map<String, dynamic>.from(value);
-          final members = group["members"];
-          List<String> memberList = [];
-            
-          if (members is Map<dynamic, dynamic>) {
-            memberList = members.keys.map((e) => e.toString()).toList();
-          } else if (members is List) {
-            memberList = members.map((e) => e.toString()).toList();
-          }
-            
-          if (memberList.contains(_uid)) {
-            groups.add({"id": key, ...group});
-          }
-        }
-      });
+        data.forEach((key, value) {
+          if (value is Map<dynamic, dynamic>) {
+            final group = Map<String, dynamic>.from(value);
+            final members = group["members"];
+            List<String> memberList = [];
 
-      if (groups.isEmpty) {
+            if (members is Map<dynamic, dynamic>) {
+              memberList = members.keys.map((e) => e.toString()).toList();
+            } else if (members is List) {
+              memberList = members.map((e) => e.toString()).toList();
+            }
+
+            if (memberList.contains(_uid)) {
+              groups.add({"id": key, ...group});
+            }
+          }
+        });
+
+        if (groups.isEmpty) {
           return const Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -465,30 +491,30 @@ Widget _buildGroupsTab() {
         return ListView.builder(
           itemCount: groups.length,
           itemBuilder: (context, index) => _buildGroupTile(groups[index]),
-      );
-    },
-  );
-}
+        );
+      },
+    );
+  }
 
   Widget _buildDmTile(Map<String, dynamic> thread) {
     final participants = thread["participants"];
     List<String> participantList = [];
-    
+
     if (participants is Map<dynamic, dynamic>) {
       participantList = participants.keys.map((e) => e.toString()).toList();
     } else if (participants is List) {
       participantList = participants.map((e) => e.toString()).toList();
     }
-    
+
     // Get the other participant's ID (not current user)
     final otherParticipantId = participantList.firstWhere(
       (id) => id != _uid,
       orElse: () => 'unknown',
     );
-    
+
     // Get seller name if available, otherwise use participant ID
     final sellerName = thread["sellerName"] ?? otherParticipantId;
-    
+
     final unreadCounts = thread["unreadCounts"] as Map<dynamic, dynamic>? ?? {};
     final userUnreadCount = int.tryParse('${unreadCounts[_uid] ?? 0}') ?? 0;
 
@@ -497,7 +523,10 @@ Widget _buildGroupsTab() {
         backgroundColor: AppColors.primaryRed,
         child: Text(
           sellerName.isNotEmpty ? sellerName[0].toUpperCase() : 'U',
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       title: Text(
@@ -509,45 +538,47 @@ Widget _buildGroupsTab() {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
-      trailing: userUnreadCount > 0
-          ? Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: AppColors.primaryRed,
-                shape: BoxShape.circle,
-              ),
-              child: Text(
-                userUnreadCount > 9 ? '9+' : userUnreadCount.toString(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
+      trailing:
+          userUnreadCount > 0
+              ? Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryRed,
+                  shape: BoxShape.circle,
                 ),
+                child: Text(
+                  userUnreadCount > 9 ? '9+' : userUnreadCount.toString(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              )
+              : Text(
+                _formatTime(_parseTimestamp(thread["lastMessageAt"])),
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
               ),
-            )
-          : Text(
-              _formatTime(_parseTimestamp(thread["lastMessageAt"])),
-              style: const TextStyle(color: Colors.grey, fontSize: 12),
-            ),
-          onTap: () async {
+      onTap: () async {
         if (userUnreadCount > 0) {
           await AppChatService.markThreadAsRead(thread["id"]);
         }
-        
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-            builder: (_) => DirectChatScreen(
-              sellerName: sellerName,
-              sellerId: otherParticipantId,
-            ),
+
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (_) => DirectChatScreen(
+                  sellerName: sellerName,
+                  sellerId: otherParticipantId,
+                ),
           ),
         );
       },
     );
   }
 
-    Widget _buildGroupTile(Map<String, dynamic> group) {
+  Widget _buildGroupTile(Map<String, dynamic> group) {
     final unreadCounts = group["unreadCounts"] as Map<dynamic, dynamic>? ?? {};
     final userUnreadCount = int.tryParse('${unreadCounts[_uid] ?? 0}') ?? 0;
 
@@ -565,75 +596,82 @@ Widget _buildGroupsTab() {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
-      trailing: userUnreadCount > 0
-          ? Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: AppColors.primaryRed,
-                shape: BoxShape.circle,
-              ),
-              child: Text(
-                userUnreadCount > 9 ? '9+' : userUnreadCount.toString(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
+      trailing:
+          userUnreadCount > 0
+              ? Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryRed,
+                  shape: BoxShape.circle,
                 ),
+                child: Text(
+                  userUnreadCount > 9 ? '9+' : userUnreadCount.toString(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              )
+              : Text(
+                _formatTime(_parseTimestamp(group["lastMessageAt"])),
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
               ),
-            )
-          : Text(
-              _formatTime(_parseTimestamp(group["lastMessageAt"])),
-              style: const TextStyle(color: Colors.grey, fontSize: 12),
-            ),
       onTap: () async {
         if (userUnreadCount > 0) {
-          // Mark group as read
-          final groupRef = FirebaseDatabase.instance.ref("groups/${group["id"]}/unreadCounts");
-          await groupRef.child(_uid!).set(0);
+          // Mark group as read - wrap in try-catch to handle permission errors
+          try {
+            final groupRef = FirebaseDatabase.instance.ref(
+              "groups/${group["id"]}/unreadCounts",
+            );
+            await groupRef.child(_uid!).set(0);
+          } catch (e) {
+            print('Error marking group as read: $e');
+            // Continue with navigation even if marking as read fails
+          }
         }
-        
+
         // Create Group object from the data - handle both Map and List types
-  List<String> memberList = [];
+        List<String> memberList = [];
         final members = group["members"];
-  if (members is Map<dynamic, dynamic>) {
-    memberList = members.keys.map((e) => e.toString()).toList();
-  } else if (members is List) {
-    memberList = members.map((e) => e.toString()).toList();
-  }
+        if (members is Map<dynamic, dynamic>) {
+          memberList = members.keys.map((e) => e.toString()).toList();
+        } else if (members is List) {
+          memberList = members.map((e) => e.toString()).toList();
+        }
 
         final groupObj = Group(
           id: group["id"],
           name: group["name"] ?? "Unnamed Group",
-    members: memberList,
-    isAuthor: false,
-  );
+          members: memberList,
+          isAuthor: false,
+        );
 
+        // Use MaterialPageRoute directly instead of named route to avoid potential issues
         await Navigator.push(
-        context,
-          MaterialPageRoute(
-            builder: (_) => GroupChatScreen(group: groupObj),
-          ),
-      );
-    },
-  );
-}
+          context,
+          MaterialPageRoute(builder: (_) => GroupChatScreen(group: groupObj)),
+        );
+      },
+    );
+  }
 
   Widget _buildEmptyListView() {
     return const Center(
       child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
           Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey),
           SizedBox(height: 16),
           Text(
             'No chats yet',
             style: TextStyle(fontSize: 18, color: Colors.grey),
           ),
-                  Text(
+          Text(
             'Start a conversation!',
             style: TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                ],
+          ),
+        ],
       ),
     );
   }
@@ -654,7 +692,7 @@ Widget _buildGroupsTab() {
   String _formatTime(DateTime time) {
     final now = DateTime.now();
     final difference = now.difference(time);
-    
+
     if (difference.inDays > 0) {
       return '${difference.inDays}d';
     } else if (difference.inHours > 0) {
@@ -683,7 +721,7 @@ class _AdminChatTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-        leading: CircleAvatar(
+      leading: CircleAvatar(
         backgroundColor: AppColors.primaryRed,
         child: const Icon(Icons.admin_panel_settings, color: Colors.white),
       ),
@@ -691,31 +729,28 @@ class _AdminChatTile extends StatelessWidget {
         'Park View City',
         style: TextStyle(fontWeight: FontWeight.bold),
       ),
-        subtitle: Text(
-          lastMessage,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      trailing: unreadCount > 0
-          ? Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: AppColors.primaryRed,
-                shape: BoxShape.circle,
-              ),
-              child: Text(
-                unreadCount > 9 ? '9+' : unreadCount.toString(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
+      subtitle: Text(lastMessage, maxLines: 1, overflow: TextOverflow.ellipsis),
+      trailing:
+          unreadCount > 0
+              ? Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryRed,
+                  shape: BoxShape.circle,
                 ),
+                child: Text(
+                  unreadCount > 9 ? '9+' : unreadCount.toString(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              )
+              : Text(
+                _formatTime(lastMessageTime),
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
               ),
-            )
-          : Text(
-              _formatTime(lastMessageTime),
-              style: const TextStyle(color: Colors.grey, fontSize: 12),
-            ),
       onTap: onTap,
     );
   }
@@ -723,7 +758,7 @@ class _AdminChatTile extends StatelessWidget {
   String _formatTime(DateTime time) {
     final now = DateTime.now();
     final difference = now.difference(time);
-    
+
     if (difference.inDays > 0) {
       return '${difference.inDays}d';
     } else if (difference.inHours > 0) {

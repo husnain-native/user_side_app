@@ -25,7 +25,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
     if (FirebaseAuth.instance.currentUser == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please sign in to view Security & Alerts')),
+          const SnackBar(
+            content: Text('Please sign in to view Security & Alerts'),
+          ),
         );
         // Optionally redirect to login screen
         // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => LoginScreen()));
@@ -36,38 +38,50 @@ class _SecurityScreenState extends State<SecurityScreen> {
   }
 
   void _fetchAlerts() {
-    _database.child('alerts').onValue.listen((event) {
-      final data = event.snapshot.value as Map<dynamic, dynamic>?;
-      final List<_Alert> loadedAlerts = [];
-      if (data != null) {
-        data.forEach((key, value) {
-          try {
-            if (value['title'] == null || value['details'] == null) {
-              print('Skipping invalid alert $key: missing required fields');
-              return;
+    _database
+        .child('alerts')
+        .onValue
+        .listen(
+          (event) {
+            final data = event.snapshot.value as Map<dynamic, dynamic>?;
+            final List<_Alert> loadedAlerts = [];
+            if (data != null) {
+              data.forEach((key, value) {
+                try {
+                  if (value['title'] == null || value['details'] == null) {
+                    print(
+                      'Skipping invalid alert $key: missing required fields',
+                    );
+                    return;
+                  }
+                  loadedAlerts.add(
+                    _Alert(
+                      id: key,
+                      title: value['title'] ?? '',
+                      details: value['details'] ?? '',
+                      time:
+                          DateTime.tryParse(value['timestamp'] ?? '') ??
+                          DateTime.now(),
+                    ),
+                  );
+                } catch (e) {
+                  print('Error parsing alert $key: $e');
+                }
+              });
+              // Sort by timestamp (newest first)
+              loadedAlerts.sort((a, b) => b.time.compareTo(a.time));
             }
-            loadedAlerts.add(_Alert(
-              id: key,
-              title: value['title'] ?? '',
-              details: value['details'] ?? '',
-              time: DateTime.tryParse(value['timestamp'] ?? '') ?? DateTime.now(),
-            ));
-          } catch (e) {
-            print('Error parsing alert $key: $e');
-          }
-        });
-        // Sort by timestamp (newest first)
-        loadedAlerts.sort((a, b) => b.time.compareTo(a.time));
-      }
-      setState(() {
-        _alerts = loadedAlerts;
-      });
-    }, onError: (error) {
-      print('Error fetching alerts: $error');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching alerts: $error')),
-      );
-    });
+            setState(() {
+              _alerts = loadedAlerts;
+            });
+          },
+          onError: (error) {
+            print('Error fetching alerts: $error');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error fetching alerts: $error')),
+            );
+          },
+        );
   }
 
   Future<void> _callSecurity() async {
@@ -85,31 +99,66 @@ class _SecurityScreenState extends State<SecurityScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.white,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryRed,
-        title: Text(
-          'Security & Alerts',
-          style: AppTextStyles.bodyLarge.copyWith(color: Colors.white),
-        ),
+        backgroundColor: AppColors.white,
+        title: const Text('Security & Alerts'),
+        centerTitle: true,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _QuickActionsRow(
-            onCall: _callSecurity,
-            onPanic: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ReportIncidentScreen()),
-              );
-            },
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.white,
+                    foregroundColor: AppColors.primaryRed,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side : BorderSide(color: AppColors.primaryRed),
+                    ),
+                  ),
+                  onPressed: _callSecurity,
+                  icon: const Icon(Icons.call),
+                  label: const Text('Call Security'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.white,
+                    foregroundColor: AppColors.primaryRed,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side : BorderSide(color: AppColors.primaryRed),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ReportIncidentScreen(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.report),
+                  label: const Text('Report Incident'),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           Text('Emergency Alerts', style: AppTextStyles.bodyMediumBold),
           const SizedBox(height: 8),
           if (_alerts.isEmpty)
-            const Card(
-              child: Padding(
+            Card(
+              color: AppColors.white,
+              child: const Padding(
                 padding: EdgeInsets.all(16),
                 child: Text('No alerts available.'),
               ),
@@ -119,6 +168,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
               (alert) => Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Card(
+                  color: AppColors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -134,10 +184,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     subtitle: Text(alert.details),
                     trailing: Text(
                       _formatTime(alert.time),
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ),
                 ),

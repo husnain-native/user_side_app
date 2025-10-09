@@ -5,6 +5,7 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:park_chatapp/features/chat/presentation/screens/direct_chat_screen.dart';
 import 'firebase_options.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:park_chatapp/core/services/theme_service.dart';
 import 'package:park_chatapp/core/widgets/auth_wrapper.dart';
 import 'package:park_chatapp/features/chat/presentation/screens/create_group_screen.dart';
 import 'package:park_chatapp/features/chat/presentation/screens/group_chat_screen.dart';
@@ -70,38 +71,55 @@ class MyApp extends StatelessWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (_, child) {
-        return MaterialApp(
-          title: 'Flutter Demo',
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData(),
-          routes: {
-            '/create_group': (context) => const CreateGroupScreen(),
-            '/AddEditPropertyScreen':
-                (context) => const AddEditPropertyScreen(),
-            '/my_listings': (context) => const MyListingsScreen(),
-            '/utility_bills': (context) => const UtilityBillReferenceScreen(),
-            '/possession_charges':
-                (context) => const PossessionChargesReferenceScreen(),
+        // Load persisted theme before building MaterialApp
+        ThemeService.instance.load();
+        return ValueListenableBuilder<ThemeMode>(
+          valueListenable: ThemeService.instance.themeModeNotifier,
+          builder: (context, themeMode, _) {
+            return MaterialApp(
+              title: 'Flutter Demo',
+              debugShowCheckedModeBanner: false,
+              theme: ThemeData(
+                colorSchemeSeed: const Color(0xFFE53935),
+                brightness: Brightness.light,
+                useMaterial3: true,
+              ),
+              darkTheme: ThemeData(
+                colorSchemeSeed: const Color(0xFFE53935),
+                brightness: Brightness.dark,
+                useMaterial3: true,
+              ),
+              themeMode: themeMode,
+              routes: {
+                '/create_group': (context) => const CreateGroupScreen(),
+                '/AddEditPropertyScreen':
+                    (context) => const AddEditPropertyScreen(),
+                '/my_listings': (context) => const MyListingsScreen(),
+                '/utility_bills':
+                    (context) => const UtilityBillReferenceScreen(),
+                '/possession_charges':
+                    (context) => const PossessionChargesReferenceScreen(),
+              },
+              onGenerateRoute: (settings) {
+                if (settings.name == '/group_chat') {
+                  final Group group = settings.arguments as Group;
+                  return MaterialPageRoute(
+                    builder: (_) => GroupChatScreen(group: group),
+                  );
+                }
+                if (settings.name == '/chat') {
+                  final Map<String, dynamic> args =
+                      settings.arguments as Map<String, dynamic>;
+                  final String sellerName = args['sellerName'] as String;
+                  return MaterialPageRoute(
+                    builder: (_) => DirectChatScreen(sellerName: sellerName),
+                  );
+                }
+                return null;
+              },
+              home: child,
+            );
           },
-          onGenerateRoute: (settings) {
-            if (settings.name == '/group_chat') {
-              final Group group = settings.arguments as Group;
-              return MaterialPageRoute(
-                builder: (_) => GroupChatScreen(group: group),
-              );
-            }
-            if (settings.name == '/chat') {
-              final Map<String, dynamic> args =
-                  settings.arguments as Map<String, dynamic>;
-              final String threadId = args['threadId'] as String;
-              final String sellerName = args['sellerName'] as String;
-              return MaterialPageRoute(
-                builder: (_) => DirectChatScreen(sellerName: sellerName),
-              );
-            }
-            return null;
-          },
-          home: child,
         );
       },
       child: AuthWrapper(), // Use auth wrapper to handle auth state
